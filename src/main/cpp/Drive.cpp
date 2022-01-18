@@ -14,9 +14,10 @@
 	Arguments:		Joystick* pDriveController
 	Derived from:	Nothing
 ******************************************************************************/
-CDrive::CDrive(Joystick* pDriveController) 
+CDrive::CDrive(Joystick* pDriveController, Timer* pTimer) 
 {
 	m_pDriveController		= pDriveController;
+	m_pTimer				= pTimer;
 	m_pLeadDriveMotor1		= new CFalconMotion(nLeadDriveMotor1);
 	m_pFollowMotor1			= new WPI_TalonFX(nFollowDriveMotor1);
 	m_pLeadDriveMotor2		= new CFalconMotion(nLeadDriveMotor2);

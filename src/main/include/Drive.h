@@ -24,10 +24,10 @@
 #include <frc/trajectory/Trajectory.h>
 #include <frc/geometry/Pose2d.h>
 #include <AHRS.h>
+#include <frc/Timer.h>
 
 using namespace rev;
 using namespace frc;
-using namespace units;
 
 // Declare constants
 const double dJoystickDeadzone					= 0.100;
@@ -42,7 +42,7 @@ class CDrive
 {
 public:
 	// Declare class methods.
-	CDrive(Joystick* pDriveController);
+	CDrive(Joystick* pDriveController, Timer* pTimer);
 	~CDrive();
 	void Init();
 	void Tick();
@@ -60,6 +60,7 @@ private:
 	AHRS*									m_pGyro;
 	Joystick*								m_pDriveController;
 	DifferentialDrive*						m_pRobotDrive;
+	Timer*									m_pTimer;
 	//DifferentialDriveOdometry*				m_pOdometry;
 	//Trajectory								m_Trajectory;
 };

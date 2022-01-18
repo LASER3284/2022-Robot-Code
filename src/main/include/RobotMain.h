@@ -11,6 +11,7 @@
 
 #include <string>
 #include <frc/TimedRobot.h>
+#include <frc/Timer.h>
 #include <frc/smartdashboard/SendableChooser.h>
 ///////////////////////////////////////////////////////////////////////////////
 using namespace frc;
@@ -31,10 +32,32 @@ public:
 	void TestPeriodic() override;
 
 private:
+	enum AutoStates {
+		eAutoStopped = 0,
+		eAutoIdle,
+
+	};
+
+	enum TeleopStates {
+		eTeleopStopped = 0,
+		eTeleopIdle,
+		eTeleopFindingBall,
+		eTeleopHomingBall,
+		eTeleopClimbing,
+		eTeleopIntake,
+		eTeleopFiring
+	};
+
 	frc::SendableChooser<std::string>*	m_pAutoChooser;
 	std::string							m_strAutoSelected;
 	Joystick*							m_pDriveController;
 	Joystick*							m_pAuxController;
 	CDrive*								m_pDrive;
+	Timer*								m_pTimer;
+
+	double	m_dStartTime;
+	int		m_nAutoState;
+	int		m_nTeleopState;
+	int		m_nPreviousState;
 };
 #endif

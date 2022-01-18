@@ -9,13 +9,10 @@
 #include "IOMap.h"
 #include "SparkMotion.h"
 #include "FalconMotion.h"
+#include <frc/Solenoid.h>
 
 using namespace rev;
 using namespace frc;
-using namespace units;
-
-// Declare constants
-const double dJoystickDeadzone					= 0.100;
 
 // LiftStates enumerator
 enum LiftStates {eLiftIdle = 0};
@@ -32,16 +29,8 @@ public:
 	// Declare class methods.
 	CLift();
 	~CLift();
-	void UpdateIdleState();
-
-	// One line methods
-	int GetCurrentState()	{	return m_nCurrentState;	};
 
 private:
-	// Declare class objects and variables.
-	int			m_nCurrentState;
-	bool		m_bReady;
-	bool		m_bIdle;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif

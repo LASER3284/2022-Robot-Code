@@ -21,8 +21,13 @@ CRobotMain::CRobotMain()
 {
 	m_pDriveController			= new Joystick(0);
 	m_pAuxController			= new Joystick(1);
-	m_pDrive					= new CDrive(m_pDriveController);
+	m_pTimer					= new Timer();
+	m_pDrive					= new CDrive(m_pDriveController, m_pTimer);
 	m_pAutoChooser				= new SendableChooser<string>();
+
+	m_nAutoState				= eAutoIdle;
+	m_dStartTime				= 0.0;
+	m_nPreviousState			= eTeleopStopped;
 }
 
 /******************************************************************************
@@ -51,6 +56,8 @@ CRobotMain::~CRobotMain()
 ******************************************************************************/
 void CRobotMain::RobotInit()
 {
+	m_pDrive->Init();
+
 	// Setup autonomous chooser.
 	m_pAutoChooser->SetDefaultOption("Autonomous Idle", "Autonomous Idle");
 	m_pAutoChooser->AddOption("Alliance Trench", "Alliance Trench");
@@ -60,6 +67,8 @@ void CRobotMain::RobotInit()
 	m_pAutoChooser->AddOption("Power Port", "Power Port");
 	m_pAutoChooser->AddOption("Test Path", "Test Path");
 	SmartDashboard::PutData(m_pAutoChooser);
+
+	m_pTimer->Start();
 }
 
 /******************************************************************************
@@ -100,7 +109,8 @@ void CRobotMain::AutonomousPeriodic()
 ******************************************************************************/
 void CRobotMain::TeleopInit()
 {
-
+	m_pDrive->Init();
+	m_pDrive->SetJoystickControl(true);
 }
 
 /******************************************************************************
@@ -110,7 +120,7 @@ void CRobotMain::TeleopInit()
 ******************************************************************************/
 void CRobotMain::TeleopPeriodic()
 {
-
+	m_pDrive->Tick();
 }
 
 /******************************************************************************

@@ -14,12 +14,7 @@
 ******************************************************************************/
 CLift::CLift() 
 {
-	// Init local classes
-
-	// Init local variables
-	m_bReady			= true;
-	m_bIdle				= true;
-	m_nCurrentState		= eIdle;
+	
 }
 
 /******************************************************************************
@@ -27,22 +22,7 @@ CLift::CLift()
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
-CLift::~CLift(){}
-
-/******************************************************************************
-	Description:	Update m_bIdle to either true or false based on 
-					m_nCurrentLiftStep
-	Arguments:		None
-	Returns:		Nothing
-******************************************************************************/
-void CLift::UpdateIdleState() 
+CLift::~CLift()
 {
-	if (m_nCurrentState == eIdle)
-	{
-		m_bIdle = true;
-	}
-	else
-	{
-		m_bIdle = false;
-	}
+	
 }

@@ -28,17 +28,8 @@ class CShooter
 public:
     CShooter(Joystick* pShooterJoystick);
     ~CShooter();
-    void Init();
-    void Tick();
-    void Fire();
-    void Preload();
-    void SetJoystickControl(bool bJoystickControl);
 	
 private:
-    bool                m_bJoystickControl;
-    double              m_dFlyWheelSpeed;
-    Joystick*           m_pShooterJoystick;
-
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif
