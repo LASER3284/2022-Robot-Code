@@ -75,6 +75,7 @@ void CDrive::Init()
 	ResetOdometry();
 
 	m_pTimer->Start();
+	// Reset encoders and odometry>
 }
 
 /******************************************************************************
@@ -140,7 +141,7 @@ void CDrive::Stop()
 ******************************************************************************/
 void CDrive::ResetOdometry()
 {
-
+	m_pLeadDriveMotor1->ResetEncoderPosition();
 }
 
 /******************************************************************************
