@@ -16,7 +16,8 @@
 	Derived from:	Nothing
 ******************************************************************************/
 
-CTransfer::CTransfer(){
+CTransfer::CTransfer()
+{
 	m_pBeltMotor1		= new CSparkMotion(nBeltMotor1);
 	m_pBeltMotor2		= new CSparkMotion(nBeltMotor2);
 	m_pBeltMotor3		= new CSparkMotion(nBeltMotor3);
@@ -28,7 +29,8 @@ CTransfer::CTransfer(){
 	Derived from:	Nothing
 ******************************************************************************/
 
-CTransfer::~CTransfer(){
+CTransfer::~CTransfer()
+{
 	delete m_pBeltMotor1;
 	delete m_pBeltMotor2;
 	delete m_pBeltMotor3;
@@ -44,7 +46,8 @@ CTransfer::~CTransfer(){
 	Returns:		Nothing
 ******************************************************************************/
 
-void CTransfer::Init(){
+void CTransfer::Init()
+{
 	// Reset sticky faults
 	m_pBeltMotor1->ClearStickyFaults();
 	m_pBeltMotor2->ClearStickyFaults();
