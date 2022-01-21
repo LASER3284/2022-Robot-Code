@@ -42,7 +42,7 @@ class CDrive
 {
 public:
 	// Declare class methods.
-	CDrive(Joystick* pDriveController, Timer* pTimer);
+	CDrive(Joystick* pDriveController);
 	~CDrive();
 	void Init();
 	void Tick();

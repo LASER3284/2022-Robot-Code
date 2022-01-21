@@ -22,7 +22,7 @@ CRobotMain::CRobotMain()
 	m_pDriveController			= new Joystick(0);
 	m_pAuxController			= new Joystick(1);
 	m_pTimer					= new Timer();
-	m_pDrive					= new CDrive(m_pDriveController, m_pTimer);
+	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
 
 	m_nAutoState				= eAutoIdle;
@@ -40,12 +40,14 @@ CRobotMain::~CRobotMain()
 	delete m_pDriveController;
 	delete m_pAuxController;
 	delete m_pDrive;
+	delete m_pTimer;
 	delete m_pAutoChooser;
 
 
 	m_pDriveController	= nullptr;
 	m_pAuxController	= nullptr;
 	m_pDrive			= nullptr;
+	m_pTimer			= nullptr;
 	m_pAutoChooser		= nullptr;
 }
 
