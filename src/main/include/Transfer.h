@@ -17,7 +17,8 @@
 		Derived From:	        Nothing
 ******************************************************************************/
 
-class CTransfer {
+class CTransfer 
+{
 public:
 	// Declare class methods.
 	CTransfer();
