@@ -11,9 +11,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
-	Description:		CTransfer constructor, init variables
+	Description:	CTransfer constructor, init variables
 	Arguments:		None
-	Derived from:		Nothing
+	Derived from:	Nothing
 ******************************************************************************/
 
 CTransfer::CTransfer()
@@ -24,9 +24,9 @@ CTransfer::CTransfer()
 }
 
 /******************************************************************************
-	Description:		CTransfer destructor, delete variables
+	Description:	CTransfer destructor, delete variables
 	Arguments:		None
-	Derived from:		Nothing
+	Derived from:	Nothing
 ******************************************************************************/
 
 CTransfer::~CTransfer()
@@ -41,7 +41,7 @@ CTransfer::~CTransfer()
 }
 
 /******************************************************************************
-	Description:		Initialization function for CTransfer, init motors
+	Description:	Initialization function for CTransfer, init motors
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
