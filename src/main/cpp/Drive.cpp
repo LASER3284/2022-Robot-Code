@@ -14,10 +14,10 @@
 	Arguments:		Joystick* pDriveController
 	Derived from:	Nothing
 ******************************************************************************/
-CDrive::CDrive(Joystick* pDriveController, Timer* pTimer) 
+CDrive::CDrive(Joystick* pDriveController) 
 {
 	m_pDriveController		= pDriveController;
-	m_pTimer				= pTimer;
+	m_pTimer				= new Timer();
 	m_pLeadDriveMotor1		= new CFalconMotion(nLeadDriveMotor1);
 	m_pFollowMotor1			= new WPI_TalonFX(nFollowDriveMotor1);
 	m_pLeadDriveMotor2		= new CFalconMotion(nLeadDriveMotor2);
@@ -73,6 +73,8 @@ void CDrive::Init()
 
 	// Reset encoders and odometry
 	ResetOdometry();
+
+	m_pTimer->Start();
 }
 
 /******************************************************************************
@@ -85,22 +87,42 @@ void CDrive::Tick()
 	if (m_bJoystickControl)
 	{
 		// Set variables to joystick values.
-		double XAxis = m_pDriveController->GetRawAxis(eRightAxisX);
-		double YAxis = -m_pDriveController->GetRawAxis(eLeftAxisY);
+		double dXAxis = m_pDriveController->GetRawAxis(eRightAxisX);
+		double dYAxis = -m_pDriveController->GetRawAxis(eLeftAxisY);
 
 		// Check if joystick is in deadzone.
-		if (fabs(XAxis) < dJoystickDeadzone)
+		if (fabs(dXAxis) < dJoystickDeadzone)
 		{
-			XAxis = 0.0;
+			dXAxis = 0.0;
 		}
-		if (fabs(YAxis) < dJoystickDeadzone)
+		if (fabs(dYAxis) < dJoystickDeadzone)
 		{
-			YAxis = 0.0;
+			dYAxis = 0.0;
 		}
 
 		// Set drivetrain powers to joystick controls.
-		m_pRobotDrive->ArcadeDrive(YAxis, XAxis, false);
+		m_pRobotDrive->ArcadeDrive(dYAxis, dXAxis, false);
 	}
+
+	// Update Smartdashboard values.
+    SmartDashboard::PutNumber("LeftMotorPower", m_pLeadDriveMotor2->GetMotorVoltage());
+    SmartDashboard::PutNumber("RightMotorPower", m_pLeadDriveMotor1->GetMotorVoltage());
+    SmartDashboard::PutNumber("Left Actual Velocity", (m_pLeadDriveMotor2->GetActual(false) / 39.3701));
+    SmartDashboard::PutNumber("Right Actual Velocity", (m_pLeadDriveMotor1->GetActual(false) / 39.3701));
+    SmartDashboard::PutNumber("Left Actual Position", m_pLeadDriveMotor2->GetActual(true));
+    SmartDashboard::PutNumber("Right Actual Position", m_pLeadDriveMotor1->GetActual(true));
+}
+
+/******************************************************************************
+    Description:	Tick function, ran every 20ms in CRobotMain::Tick()
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CDrive::Stop()
+{
+	m_pLeadDriveMotor1->Stop();
+	m_pLeadDriveMotor2->Stop();
+	m_bJoystickControl = false;
 
 	// Update Smartdashboard values.
     SmartDashboard::PutNumber("LeftMotorPower", m_pLeadDriveMotor2->GetMotorVoltage());
