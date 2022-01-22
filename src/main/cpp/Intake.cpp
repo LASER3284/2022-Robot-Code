@@ -14,7 +14,10 @@
 ******************************************************************************/
 CIntake::CIntake()
 {
-
+	m_pCompressor			= new Compressor(2, PneumaticsModuleType::CTREPCM);
+	m_pFrontIntakeMotor1	= new CANSparkMax(nIntakeMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pFrontIntakeMotor2	= new CANSparkMax(nIntakeMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pLimitSwitch			= new DigitalInput(nIntakeLimitSwitch1);
 }
 
 /******************************************************************************
@@ -24,5 +27,22 @@ CIntake::CIntake()
 ******************************************************************************/
 CIntake::~CIntake()
 {
-
+ delete m_pCompressor;
+}
+/******************************************************************************
+	Description:	Thing
+	Arguments:		idk
+	Derived from:	something
+******************************************************************************/
+void CIntake::CheckPneumaticPosition()
+{
+	if(m_pLimitSwitch->Get()){
+		m_pFrontIntakeMotor1->Set(0.500);
+		m_pFrontIntakeMotor2->Set(0.500);
+		m_bIntakeDown = true;
+	} else{
+		m_pFrontIntakeMotor1->Set(0.000);
+		m_pFrontIntakeMotor2->Set(0.000);
+		m_bIntakeDown = false;
+	}
 }
