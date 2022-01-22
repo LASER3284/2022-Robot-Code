@@ -9,9 +9,11 @@
 #include <frc/Compressor.h>
 #include <frc/DigitalInput.h>
 #include <rev/CANSparkMax.h>
+#include <ctre/phoenix/motorcontrol/can/WPI_TalonSRX.h>
 
 using namespace frc;
 using namespace rev;
+using namespace ctre::phoenix::motorcontrol::can;
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -24,13 +26,17 @@ class CIntake
 public:
     CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeLimitSwitch);
     ~CIntake();
-	void CheckPneumaticPosition();
+
+	void CheckIntakePosition();
+	void IntakeToggle();
 
 
 private:
 	DigitalInput* m_pLimitSwitch;
 	CANSparkMax* m_pIntakeMotor1;
 	CANSparkMax* m_pIntakeMotor2;
+	WPI_TalonSRX* m_pIntakeDeployMotor1;
+
 	bool m_bIntakeDown;
 };
 ///////////////////////////////////////////////////////////////////////////////

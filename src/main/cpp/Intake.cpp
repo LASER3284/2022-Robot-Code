@@ -16,13 +16,13 @@ CIntake::CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeLimitSwitch)
 {
 	m_pIntakeMotor1	= new CANSparkMax(nIntakeMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
 	m_pIntakeMotor2	= new CANSparkMax(nIntakeMotor2, CANSparkMaxLowLevel::MotorType::kBrushless);
+
 	m_pLimitSwitch	= new DigitalInput(nIntakeLimitSwitch);
 }
-
 /******************************************************************************
 	Description:	CIntake destructor, delete local class pointers
 	Arguments:		None
-	Derived from:	Nothing
+	Derived from:	Intake.h
 ******************************************************************************/
 CIntake::~CIntake()
 {
@@ -35,19 +35,29 @@ CIntake::~CIntake()
 	m_pLimitSwitch	= nullptr;
 }
 /******************************************************************************
-	Description:	Thing
-	Arguments:		idk
-	Derived from:	something
+	Description:	Check Intake Positon, Then activate Motors Corasponding To the position of the intake
+	Arguments:		None
+	Derived from:	Inake.h
 ******************************************************************************/
-void CIntake::CheckPneumaticPosition()
+void CIntake::CheckIntakePosition()
 {
-	if(m_pLimitSwitch->Get()){
+	m_bIntakeDown = m_pLimitSwitch->Get();
+}
+/******************************************************************************
+	Description:	deploy intake in a toggle format
+	Arguments:		bToggle
+	Derived from:	Inake.h
+******************************************************************************/
+void CIntake::IntakeToggle()
+{
+	if(m_bIntakeDown){
+		m_pIntakeDeployMotor1->Set(0.000);
 		m_pIntakeMotor1->Set(0.500);
 		m_pIntakeMotor2->Set(0.500);
-		m_bIntakeDown = true;
-	} else{
+	} else
+	{
+		m_pIntakeDeployMotor1->Set(0.250);
 		m_pIntakeMotor1->Set(0.000);
 		m_pIntakeMotor2->Set(0.000);
-		m_bIntakeDown = false;
 	}
 }

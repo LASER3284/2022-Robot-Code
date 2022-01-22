@@ -34,7 +34,8 @@ const int nTurretMotor                  =  15;      // Turret rotation motor  (S
 const int nBeltMotor1                   =  16;      // Front belt motor       (SPARK MAX controller)
 const int nBeltMotor2                   =  17;      // Back belt motor        \|/
 const int nBeltMotor3                   =  18;      // Top belt motor         (SPARK MX controller)
-
+const int nIntakeDeployMotor1           =  19;      // Intake Deploy motor one(TALON SRX controller)
+const int nIntakeDeployMotor2           =  20;      // Intake Deploy motor two\|/
 // PWM Channels.
 const int nBlinkinID					=	1;		// PWM channel for Blinkin LED driver
 
