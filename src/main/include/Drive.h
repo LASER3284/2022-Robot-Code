@@ -7,10 +7,9 @@
 #define Drive_h
 
 #include "IOMap.h"
-#include "SparkMotion.h"
 #include "FalconMotion.h"
+#include "TrajectoryConstants.h"
 
-#include <rev/CANSparkMax.h>
 #include <ctre/phoenix/motorcontrol/can/WPI_TalonFX.h>
 #include <frc/controller/PIDController.h>
 #include <frc/AnalogInput.h>
@@ -26,7 +25,7 @@
 #include <AHRS.h>
 #include <frc/Timer.h>
 
-using namespace rev;
+using namespace ctre::phoenix::motorcontrol::can;
 using namespace frc;
 
 // Declare constants
@@ -62,6 +61,7 @@ private:
 	Joystick*								m_pDriveController;
 	DifferentialDrive*						m_pRobotDrive;
 	Timer*									m_pTimer;
+	CTrajectoryConstants*					m_pTrajectoryConstants;
 	//DifferentialDriveOdometry*				m_pOdometry;
 	//Trajectory								m_Trajectory;
 };
