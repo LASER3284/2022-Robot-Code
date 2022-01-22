@@ -4,5 +4,3 @@ Official robot code for 2022 Rapid React. Libraries used are WPILib 2022.2.1, RE
 **"master" branch** contains most development and changes. All other branches will be forked from master,
 then merged back in after testing.
 <br>
-**"docs" branch** contains documentation on how the code works, its structure, notes, and the robot electrical schematics.
-<br>
