@@ -16,7 +16,7 @@ CIntake::CIntake()
 {
 	m_pCompressor			= new Compressor(2, PneumaticsModuleType::CTREPCM);
 	m_pFrontIntakeMotor1	= new CANSparkMax(nIntakeMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
-	m_pFrontIntakeMotor2	= new CANSparkMax(nIntakeMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pFrontIntakeMotor2	= new CANSparkMax(nIntakeMotor2, CANSparkMaxLowLevel::MotorType::kBrushless);
 	m_pLimitSwitch			= new DigitalInput(nIntakeLimitSwitch1);
 }
 
