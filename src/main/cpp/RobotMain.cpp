@@ -24,7 +24,7 @@ CRobotMain::CRobotMain()
 	m_pTimer					= new Timer();
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
-	m_pIntake					= new CIntake();
+	m_pIntake					= new CIntake(nIntakeMotor1, nIntakeMotor2, nIntakeLimitSwitch1);
 
 	m_nAutoState				= eAutoIdle;
 	m_dStartTime				= 0.0;
