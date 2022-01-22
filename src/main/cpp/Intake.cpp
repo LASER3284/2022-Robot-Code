@@ -12,12 +12,11 @@
 	Arguments:		None
 	Derived from:	Nothing
 ******************************************************************************/
-CIntake::CIntake()
+CIntake::CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeLimitSwitch)
 {
-	m_pCompressor			= new Compressor(2, PneumaticsModuleType::CTREPCM);
-	m_pFrontIntakeMotor1	= new CANSparkMax(nIntakeMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
-	m_pFrontIntakeMotor2	= new CANSparkMax(nIntakeMotor2, CANSparkMaxLowLevel::MotorType::kBrushless);
-	m_pLimitSwitch			= new DigitalInput(nIntakeLimitSwitch1);
+	m_pIntakeMotor1	= new CANSparkMax(nIntakeMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pIntakeMotor2	= new CANSparkMax(nIntakeMotor2, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pLimitSwitch	= new DigitalInput(nIntakeLimitSwitch);
 }
 
 /******************************************************************************
@@ -27,7 +26,13 @@ CIntake::CIntake()
 ******************************************************************************/
 CIntake::~CIntake()
 {
- delete m_pCompressor;
+	delete m_pIntakeMotor1;
+	delete m_pIntakeMotor2;
+	delete m_pLimitSwitch;
+
+	m_pIntakeMotor1	= nullptr;
+	m_pIntakeMotor2	= nullptr;
+	m_pLimitSwitch	= nullptr;
 }
 /******************************************************************************
 	Description:	Thing
@@ -37,12 +42,12 @@ CIntake::~CIntake()
 void CIntake::CheckPneumaticPosition()
 {
 	if(m_pLimitSwitch->Get()){
-		m_pFrontIntakeMotor1->Set(0.500);
-		m_pFrontIntakeMotor2->Set(0.500);
+		m_pIntakeMotor1->Set(0.500);
+		m_pIntakeMotor2->Set(0.500);
 		m_bIntakeDown = true;
 	} else{
-		m_pFrontIntakeMotor1->Set(0.000);
-		m_pFrontIntakeMotor2->Set(0.000);
+		m_pIntakeMotor1->Set(0.000);
+		m_pIntakeMotor2->Set(0.000);
 		m_bIntakeDown = false;
 	}
 }
