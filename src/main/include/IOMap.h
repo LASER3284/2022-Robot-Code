@@ -44,7 +44,7 @@ const int nBlinkinID					=	1;		// PWM channel for Blinkin LED driver
 // Analog Channels.
 
 // Digital Channels.
-const int nIntakeLimitSwitch1           =   9;
+const int nFrontIntakeDownLimitSwitch1           =   9;
 
 // Xbox Controller Button Assignments.
 enum XboxButtons 		{eButtonA = 1, eButtonB, eButtonX, eButtonY, eButtonLB, eButtonRB, eBack, eStart, eButtonLS, eButtonRS};

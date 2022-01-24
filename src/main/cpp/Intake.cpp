@@ -12,52 +12,109 @@
 	Arguments:		None
 	Derived from:	Nothing
 ******************************************************************************/
-CIntake::CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeLimitSwitch)
+CIntake::CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeDownLimitSwitch, int nIntakeUpLimitSwitch, int nDeployController)
 {
-	m_pIntakeMotor1	= new CANSparkMax(nIntakeMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
-	m_pIntakeMotor2	= new CANSparkMax(nIntakeMotor2, CANSparkMaxLowLevel::MotorType::kBrushless);
-
-	m_pLimitSwitch	= new DigitalInput(nIntakeLimitSwitch);
+	m_pIntakeMotor1					= new CANSparkMax(nIntakeMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pIntakeMotor2					= new CANSparkMax(nIntakeMotor2, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pIntakeDeployMotorController	= new WPI_TalonSRX(nDeployController);
+	m_pLimitSwitchDown				= new DigitalInput(nIntakeDownLimitSwitch);
+	m_pLimitSwitchUp				= new DigitalInput(nIntakeUpLimitSwitch);
 }
 /******************************************************************************
 	Description:	CIntake destructor, delete local class pointers
 	Arguments:		None
-	Derived from:	Intake.h
+	Derived from:	Nothing
 ******************************************************************************/
 CIntake::~CIntake()
 {
 	delete m_pIntakeMotor1;
 	delete m_pIntakeMotor2;
-	delete m_pLimitSwitch;
+	delete m_pLimitSwitchDown;
+	delete m_pLimitSwitchUp;
 
-	m_pIntakeMotor1	= nullptr;
-	m_pIntakeMotor2	= nullptr;
-	m_pLimitSwitch	= nullptr;
+	m_pIntakeMotor1		= nullptr;
+	m_pIntakeMotor2		= nullptr;
+	m_pLimitSwitchDown	= nullptr;
+	m_pLimitSwitchUp	= nullptr;
 }
+
 /******************************************************************************
-	Description:	Check Intake Positon, Then activate Motors Corasponding To the position of the intake
+	Description:	Check intake position
 	Arguments:		None
-	Derived from:	Inake.h
+	Returns:		Nothing
 ******************************************************************************/
 void CIntake::CheckIntakePosition()
 {
-	m_bIntakeDown = m_pLimitSwitch->Get();
+	m_bIntakeDown	= m_pLimitSwitchDown->Get();
+	m_bIntakeUp		= m_pLimitSwitchUp->Get();
 }
+
 /******************************************************************************
-	Description:	deploy intake in a toggle format
-	Arguments:		bToggle
-	Derived from:	Inake.h
+	Description:	Retract intake
+	Arguments:		None
+	Returns:		Nothing
 ******************************************************************************/
-void CIntake::IntakeToggle()
+void CIntake::IntakeUp()
 {
-	if(m_bIntakeDown){
-		m_pIntakeDeployMotor1->Set(0.000);
-		m_pIntakeMotor1->Set(0.500);
-		m_pIntakeMotor2->Set(0.500);
-	} else
+	// Check Intake Position
+	CheckIntakePosition();
+
+	// If not intake up, then set motor to pull up
+	if (!m_bIntakeUp)
 	{
-		m_pIntakeDeployMotor1->Set(0.250);
-		m_pIntakeMotor1->Set(0.000);
-		m_pIntakeMotor2->Set(0.000);
+		m_pIntakeDeployMotorController->Set(-0.250);
 	}
+	else
+	{
+		m_pIntakeDeployMotorController->Set(0.000);
+	}
+}
+
+/******************************************************************************
+	Description:	Deploy intake
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CIntake::IntakeDown()
+{
+	// Check Intake Position
+	CheckIntakePosition();
+
+	// If not intake up, then set motor to release motor down
+	if (!m_bIntakeDown)
+	{
+		m_pIntakeDeployMotorController->Set(0.250);
+	}
+	else
+	{
+		m_pIntakeDeployMotorController->Set(0.000);
+	}
+}
+
+/******************************************************************************
+	Description:	Stop intake motors
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CIntake::StopMotorOnDownSwitch()
+{
+	// Check Intake Position
+	CheckIntakePosition();
+
+	// If not intake up, then set motor to release motor down
+	if (m_bIntakeDown) m_pIntakeDeployMotorController->Set(0.000);
+}
+
+/******************************************************************************
+	Description:	Stop intake motors
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CIntake::StopMotorOnUpSwitch()
+{
+	// Check Intake Position
+	CheckIntakePosition();
+
+	// If not intake up, then set motor to release motor down
+	if (m_bIntakeUp) m_pIntakeDeployMotorController->Set(0.000);
 }

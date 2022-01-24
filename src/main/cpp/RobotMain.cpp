@@ -24,7 +24,7 @@ CRobotMain::CRobotMain()
 	m_pTimer					= new Timer();
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
-	m_pIntake					= new CIntake();
+	m_pIntake					= new CIntake(3, 7, 9, 0, 5);
 
 	m_nAutoState				= eAutoIdle;
 	m_dStartTime				= 0.0;
@@ -175,7 +175,10 @@ void CRobotMain::TestInit()
 ******************************************************************************/
 void CRobotMain::TestPeriodic()
 {
-	m_pIntake->CheckPneumaticPosition();
+	if (m_pAuxController->GetRawButtonPressed(eButtonX)) m_pIntake->IntakeDown();
+	m_pIntake->StopMotorOnDownSwitch();
+	if (m_pAuxController->GetRawButtonPressed(eButtonY)) m_pIntake->IntakeUp();
+	m_pIntake->StopMotorOnUpSwitch();
 }
 
 #ifndef RUNNING_FRC_TESTS

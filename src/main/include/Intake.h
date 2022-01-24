@@ -24,20 +24,24 @@ using namespace ctre::phoenix::motorcontrol::can;
 class CIntake
 {
 public:
-    CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeLimitSwitch);
+    CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeDownLimitSwitch, int nIntakeUpLimitSwitch, int nDeployController);
     ~CIntake();
-
 	void CheckIntakePosition();
-	void IntakeToggle();
-
+	void IntakeUp();
+	void IntakeDown();
+	void StopMotorOnUpSwitch();
+	void StopMotorOnDownSwitch();
 
 private:
-	DigitalInput* m_pLimitSwitch;
-	CANSparkMax* m_pIntakeMotor1;
-	CANSparkMax* m_pIntakeMotor2;
-	WPI_TalonSRX* m_pIntakeDeployMotor1;
+	DigitalInput*	m_pLimitSwitchDown;
+	DigitalInput*	m_pLimitSwitchUp;
+	CANSparkMax*	m_pIntakeMotor1;
+	CANSparkMax*	m_pIntakeMotor2;
+	WPI_TalonSRX*	m_pIntakeDeployMotorController;
 
 	bool m_bIntakeDown;
+	bool m_bIntakeUp;
+	bool m_bToggled;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif
