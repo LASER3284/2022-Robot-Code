@@ -31,6 +31,11 @@ public:
 	~CLift();
 
 private:
+	// Declare class objects and variables.
+	CFalconMotion*		m_pLiftMotor1;
+	CFalconMotion*		m_pLiftMotor2;
+	CFalconMotion*		m_pLiftMotor3;
+	CFalconMotion*		m_pLiftMotor4;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif

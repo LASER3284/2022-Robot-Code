@@ -14,6 +14,10 @@
 ******************************************************************************/
 CLift::CLift() 
 {
+	m_pLiftMotor1		= new CFalconMotion(nLiftMotor1);
+	m_pLiftMotor2		= new CFalconMotion(nLiftMotor2);
+	m_pLiftMotor3		= new CFalconMotion(nLiftMotor3);
+	m_pLiftMotor4		= new CFalconMotion(nLiftMotor4);
 	
 }
 
@@ -24,5 +28,13 @@ CLift::CLift()
 ******************************************************************************/
 CLift::~CLift()
 {
+	delete m_pLiftMotor1;
+	delete m_pLiftMotor2;
+	delete m_pLiftMotor3;
+	delete m_pLiftMotor4;
 	
+	m_pLiftMotor1		= nullptr;
+	m_pLiftMotor2		= nullptr;
+	m_pLiftMotor3		= nullptr;
+	m_pLiftMotor4		= nullptr;
 }

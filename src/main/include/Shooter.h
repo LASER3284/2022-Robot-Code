@@ -7,13 +7,12 @@
 #define Shooter_h
 
 #include "IOMap.h"
+#include "FalconMotion.h"
 
-#include <rev/CANSparkMax.h>
 #include <ctre/phoenix/motorcontrol/can/WPI_TalonFX.h>
 #include <frc/Joystick.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 
-using namespace rev;
 using namespace frc;
 using namespace units;
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,10 +25,14 @@ using namespace units;
 class CShooter
 {
 public:
+    // Declare class methods.
     CShooter(Joystick* pShooterJoystick);
     ~CShooter();
 	
 private:
+    // Declare class objects and variables.
+    CFalconMotion*      m_pFlywheelMotor1;
+    CFalconMotion*      m_pFlywheelMotor2;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif
