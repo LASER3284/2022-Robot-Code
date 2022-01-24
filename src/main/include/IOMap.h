@@ -26,11 +26,11 @@ const int nLiftMotor1                   =   7;      // Far left lift motor     |
 const int nLiftMotor2                   =   8;      // Far right lift motor    |
 const int nLiftMotor3                   =   9;      // Inner left lift motor  \|/
 const int nLiftMotor4                   =  10;      // Inner right lift motor (TALON FX controller)
-const int nIntakeMotor1                 =  11;      // Intake motor one       (TALON SRX controller) NOTE: config unkown, labels will be determined later
+const int nIntakeMotor1                 =  11;      // Intake motor one       (SPARK MAX controller) NOTE: config unkown, labels will be determined later
 const int nIntakeMotor2                 =  12;      // Intake motor two        |
 const int nIntakeMotor3                 =  13;      // Intake motor three      |
 const int nIntakeMotor4                 =  14;      // Intake motor four      \|/
-const int nTurretMotor                  =  15;      // Turret rotation motor  (TALON SRX controller)
+const int nTurretMotor                  =  15;      // Turret rotation motor  (SPARK MAX controller)
 const int nBeltMotor1                   =  16;      // Front belt motor       (SPARK MAX controller)
 const int nBeltMotor2                   =  17;      // Back belt motor        \|/
 const int nBeltMotor3                   =  18;      // Top belt motor         (SPARK MX controller)
@@ -43,6 +43,7 @@ const int nBlinkinID					=	1;		// PWM channel for Blinkin LED driver
 // Analog Channels.
 
 // Digital Channels.
+const int nIntakeLimitSwitch1           =   9;
 
 // Xbox Controller Button Assignments.
 enum XboxButtons 		{eButtonA = 1, eButtonB, eButtonX, eButtonY, eButtonLB, eButtonRB, eBack, eStart, eButtonLS, eButtonRS};

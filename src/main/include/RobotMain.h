@@ -8,6 +8,7 @@
 #define RobotMain_h
 
 #include "Drive.h"
+#include "Intake.h"
 
 #include <string>
 #include <frc/TimedRobot.h>
@@ -54,6 +55,7 @@ private:
 	Joystick*							m_pAuxController;
 	CDrive*								m_pDrive;
 	Timer*								m_pTimer;
+	CIntake*							m_pIntake;
 
 	double	m_dStartTime;
 	int		m_nAutoState;

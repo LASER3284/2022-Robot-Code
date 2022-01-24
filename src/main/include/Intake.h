@@ -6,7 +6,12 @@
 #ifndef Intake_h
 #define Intake_h
 
-#include "IOMap.h"
+#include <frc/Compressor.h>
+#include <frc/DigitalInput.h>
+#include <rev/CANSparkMax.h>
+
+using namespace frc;
+using namespace rev;
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -17,11 +22,16 @@
 class CIntake
 {
 public:
-    CIntake();
+    CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeLimitSwitch);
     ~CIntake();
+	void CheckPneumaticPosition();
 
 
 private:
+	DigitalInput* m_pLimitSwitch;
+	CANSparkMax* m_pIntakeMotor1;
+	CANSparkMax* m_pIntakeMotor2;
+	bool m_bIntakeDown;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif
