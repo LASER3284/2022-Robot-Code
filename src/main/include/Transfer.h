@@ -1,8 +1,8 @@
 
 /******************************************************************************
-		Description:            CTransfer implementation
+	Description:            CTransfer implementation
 	Classes:                CTransfer
-	Project:	        2022 Rapid React Robot Code
+	Project:	        	2022 Rapid React Robot Code
 ******************************************************************************/
 
 #ifndef Transfer_h
@@ -13,7 +13,7 @@
 
 /******************************************************************************
 		Description:	        CTransfer class definition.
-		Arguments:		None
+		Arguments:				None
 		Derived From:	        Nothing
 ******************************************************************************/
 
