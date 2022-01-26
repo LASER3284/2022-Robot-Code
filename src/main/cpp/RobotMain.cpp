@@ -176,6 +176,8 @@ void CRobotMain::TestInit()
 void CRobotMain::TestPeriodic()
 {
 	if (m_pAuxController->GetRawButtonPressed(eButtonX)) m_pIntake->ToggleIntake();
+	m_pIntake->IntakeDown();
+	m_pIntake->IntakeUp();
 }
 
 #ifndef RUNNING_FRC_TESTS
