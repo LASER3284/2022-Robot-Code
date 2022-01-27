@@ -20,7 +20,8 @@ CIntake::CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeDownLimitSwitc
 	m_pIntakeDeployMotorController	= new WPI_TalonSRX(nDeployController);
 	m_pLimitSwitchDown				= new DigitalInput(nIntakeDownLimitSwitch);
 	m_pLimitSwitchUp				= new DigitalInput(nIntakeUpLimitSwitch);
-	m_bIntakePosition				= bIntakePosition;
+	m_bIntakeUp						= bIntakePosition;
+	m_bIntakeDown					= !bIntakePosition;
 }
 /******************************************************************************
 	Description:	CIntake destructor, delete local class pointers
@@ -47,10 +48,13 @@ CIntake::~CIntake()
 ******************************************************************************/
 void CIntake::CheckIntakePosition()
 {
-	m_bIntakePosition = m_pLimitSwitchDown->Get();
+	m_bIntakeUp		= m_pLimitSwitchUp->Get();
+	m_bIntakeDown	= m_pLimitSwitchDown->Get();
+
+	if (m_bIntakeDown || m_bIntakeUp) m_pIntakeDeployMotorController->Set(0.000);
 }
 /******************************************************************************
-	Description:	None	
+	Description:	None
 	Arguments:		None
 	Returns:		None
 ******************************************************************************/
@@ -58,12 +62,10 @@ void CIntake::ToggleIntake()
 {
 	CheckIntakePosition();
 
-	if (m_bIntakePosition)
+	if (m_bIntakeDown || m_bIntakeUp)
 	{
-		IntakeUp();
-	} else
-	{
-		IntakeDown();
+		if (m_bIntakeDown)	IntakeUp();
+		if (m_bIntakeUp)	IntakeDown();
 	}
 }
 /******************************************************************************
@@ -73,7 +75,7 @@ void CIntake::ToggleIntake()
 ******************************************************************************/
 void CIntake::IntakeUp()
 {
-	if(m_bIntakePosition == true)
+	if (!m_bIntakeUp)
 	{
 		m_pIntakeDeployMotorController->Set(-0.250);
 	} else {
@@ -87,7 +89,7 @@ void CIntake::IntakeUp()
 ******************************************************************************/
 void CIntake::IntakeDown()
 {
-	if(m_bIntakePosition == true)
+	if(!m_bIntakeDown)
 	{
 		m_pIntakeDeployMotorController->Set(0.250);
 	} else {
