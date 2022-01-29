@@ -18,9 +18,9 @@
 
 CTransfer::CTransfer()
 {
-	m_pBeltMotor1		= new CSparkMotion(nBeltMotor1);
-	m_pBeltMotor2		= new CSparkMotion(nBeltMotor2);
-	m_pBeltMotor3		= new CSparkMotion(nBeltMotor3);
+	m_pBeltMotor1		= new CANSparkMax(nBeltMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pBeltMotor2		= new CANSparkMax(nBeltMotor2, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pBeltMotor3		= new CANSparkMax(nBeltMotor3, CANSparkMaxLowLevel::MotorType::kBrushless);
 }
 
 /******************************************************************************
@@ -48,9 +48,6 @@ CTransfer::~CTransfer()
 
 void CTransfer::Init()
 {
-	// Reset sticky faults
-	m_pBeltMotor1->ClearStickyFaults();
-	m_pBeltMotor2->ClearStickyFaults();
-	m_pBeltMotor3->ClearStickyFaults();
+	
 }
 

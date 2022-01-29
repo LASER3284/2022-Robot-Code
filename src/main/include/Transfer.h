@@ -9,7 +9,11 @@
 #define Transfer_h
 
 #include "IOMap.h"
-#include "SparkMotion.h"
+
+#include <rev/CANSparkMax.h>
+
+using namespace rev;
+///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
 		Description:	        CTransfer class definition.
@@ -27,9 +31,9 @@ public:
 
 private:
 	// Declare class objects and variables.
-	CSparkMotion*          m_pBeltMotor1;
-	CSparkMotion*          m_pBeltMotor2;
-	CSparkMotion*          m_pBeltMotor3;
+	CANSparkMax*          m_pBeltMotor1;
+	CANSparkMax*          m_pBeltMotor2;
+	CANSparkMax*          m_pBeltMotor3;
 };
 
 //////////////////////////////////////////////////////////////////////////////
