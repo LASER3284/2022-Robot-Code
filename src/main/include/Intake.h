@@ -27,7 +27,7 @@ public:
     CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeDownLimitSwitch, int nIntakeUpLimitSwitch, int nDeployController, bool IntakePosition);
     ~CIntake();
 	void CheckIntakePosition();
-	void ToggleIntake();
+	void ToggleIntake(bool bUp);
 	void IntakeUp();
 	void IntakeDown();
 

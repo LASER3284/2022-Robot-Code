@@ -54,26 +54,11 @@ void CIntake::CheckIntakePosition()
 	Arguments:		None
 	Returns:		None
 ******************************************************************************/
-void CIntake::ToggleIntake()
+void CIntake::IntakeUp()
 {
 	CheckIntakePosition();
 
-	if (m_bIntakePosition)
-	{
-		IntakeUp();
-	} else
-	{
-		IntakeDown();
-	}
-}
-/******************************************************************************
-	Description:	None	
-	Arguments:		None
-	Returns:		None
-******************************************************************************/
-void CIntake::IntakeUp()
-{
-	if(m_bIntakePosition == true)
+	if(m_bIntakePosition)
 	{
 		m_pIntakeDeployMotorController->Set(-0.250);
 	} else {
@@ -87,7 +72,9 @@ void CIntake::IntakeUp()
 ******************************************************************************/
 void CIntake::IntakeDown()
 {
-	if(m_bIntakePosition == true)
+	CheckIntakePosition();
+
+	if(m_bIntakePosition)
 	{
 		m_pIntakeDeployMotorController->Set(0.250);
 	} else {
