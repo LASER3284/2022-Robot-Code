@@ -31,9 +31,9 @@ public:
 
 private:
 	// Declare class objects and variables.
-	CANSparkMax*          m_pBeltMotor1;
-	CANSparkMax*          m_pBeltMotor2;
-	CANSparkMax*          m_pBeltMotor3;
+	CANSparkMax*          m_pTopBeltMotor;
+	CANSparkMax*          m_pFrontBeltMotor;
+	CANSparkMax*          m_pBackBeltMotor;
 };
 
 //////////////////////////////////////////////////////////////////////////////

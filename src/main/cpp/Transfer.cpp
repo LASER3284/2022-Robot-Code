@@ -18,9 +18,9 @@
 
 CTransfer::CTransfer()
 {
-	m_pBeltMotor1		= new CANSparkMax(nBeltMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
-	m_pBeltMotor2		= new CANSparkMax(nBeltMotor2, CANSparkMaxLowLevel::MotorType::kBrushless);
-	m_pBeltMotor3		= new CANSparkMax(nBeltMotor3, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pTopBeltMotor		= new CANSparkMax(nBeltMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pFrontBeltMotor	= new CANSparkMax(nBeltMotor2, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pBackBeltMotor	= new CANSparkMax(nBeltMotor3, CANSparkMaxLowLevel::MotorType::kBrushless);
 }
 
 /******************************************************************************
@@ -31,13 +31,13 @@ CTransfer::CTransfer()
 
 CTransfer::~CTransfer()
 {
-	delete m_pBeltMotor1;
-	delete m_pBeltMotor2;
-	delete m_pBeltMotor3;
+	delete m_pTopBeltMotor;
+	delete m_pFrontBeltMotor;
+	delete m_pBackBeltMotor;
 	
-	m_pBeltMotor1		= nullptr;
-	m_pBeltMotor2		= nullptr;
-	m_pBeltMotor3		= nullptr;
+	m_pTopBeltMotor		= nullptr;
+	m_pFrontBeltMotor	= nullptr;
+	m_pBackBeltMotor	= nullptr;
 }
 
 /******************************************************************************
