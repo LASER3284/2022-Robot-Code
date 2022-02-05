@@ -127,7 +127,7 @@ void CRobotMain::TeleopPeriodic()
 	// If the drive controller is pressing Select, stop the drive train
 	if (m_pDriveController->GetRawButtonPressed(eBack))
 	{
-		m_pDrive->Stop();
+		m_pDrive->ForceStop();
 	}
 	if (m_pDriveController->GetRawButtonReleased(eBack))
 	{
@@ -175,9 +175,7 @@ void CRobotMain::TestInit()
 ******************************************************************************/
 void CRobotMain::TestPeriodic()
 {
-	if (m_pAuxController->GetRawButtonPressed(eButtonX)) m_pIntake->ToggleIntake();
-	m_pIntake->IntakeDown();
-	m_pIntake->IntakeUp();
+	
 }
 
 #ifndef RUNNING_FRC_TESTS
