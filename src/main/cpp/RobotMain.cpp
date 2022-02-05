@@ -117,7 +117,7 @@ void CRobotMain::AutonomousInit()
 ******************************************************************************/
 void CRobotMain::AutonomousPeriodic() 
 {
-	double dElapsedTime = m_pTimer->Get() - m_dStartTime;
+	double dElapsedTime = (double)m_pTimer->Get() - m_dStartTime;
 
 	switch (m_nAutoState) 
 	{
