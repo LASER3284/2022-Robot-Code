@@ -23,6 +23,7 @@ CDrive::CDrive(Joystick* pDriveController)
 	m_pLeadDriveMotor2		= new CFalconMotion(nLeadDriveMotor2);
 	m_pFollowMotor2			= new WPI_TalonFX(nFollowDriveMotor2);
 	m_pRobotDrive			= new DifferentialDrive(*m_pLeadDriveMotor1->GetMotorPointer(), *m_pLeadDriveMotor2->GetMotorPointer());
+	m_pGyro					= new AHRS(SPI::Port::kMXP);
 
 	m_bJoystickControl = false;
 }
@@ -40,6 +41,7 @@ CDrive::~CDrive()
 	delete m_pFollowMotor1;
 	delete m_pFollowMotor2;
 	delete m_pRobotDrive;
+	delete m_pGyro;
 	
 	m_pDriveController	= nullptr;
 	m_pLeadDriveMotor1	= nullptr;
@@ -47,6 +49,7 @@ CDrive::~CDrive()
 	m_pFollowMotor1		= nullptr;
 	m_pFollowMotor2		= nullptr;
 	m_pRobotDrive		= nullptr;
+	m_pGyro				= nullptr;
 }
 
 /******************************************************************************
@@ -119,7 +122,7 @@ void CDrive::Tick()
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
-void CDrive::Stop()
+void CDrive::ForceStop()
 {
 	m_pLeadDriveMotor1->Stop();
 	m_pLeadDriveMotor2->Stop();
@@ -142,6 +145,9 @@ void CDrive::Stop()
 void CDrive::ResetOdometry()
 {
 	m_pLeadDriveMotor1->ResetEncoderPosition();
+	m_pLeadDriveMotor2->ResetEncoderPosition();
+
+	m_pGyro->ZeroYaw();
 }
 
 /******************************************************************************
@@ -162,4 +168,60 @@ void CDrive::SetJoystickControl(bool bJoystickControl)
 void CDrive::SetDriveSafety(bool bDriveSafety)
 {
 	m_pRobotDrive->SetSafetyEnabled(bDriveSafety);
+}
+
+/******************************************************************************
+    Description:	Follow a trajectory based on elapsed time
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CDrive::FollowTrajectory()
+{
+	SetDriveSafety(false);
+
+	m_pRamseteCommand->Execute();
+}
+
+/******************************************************************************
+    Description:	Follow a trajectory based on elapsed time
+	Arguments:		int nPath
+	Returns:		Nothing
+******************************************************************************/
+void CDrive::SetTrajectory(int nPath)
+{
+	m_pTrajectoryConstants->SelectTrajectory(nPath);
+	m_Trajectory = m_pTrajectoryConstants->GetSelectedTrajectory();
+
+	m_pRamseteCommand = new frc2::RamseteCommand(
+        m_Trajectory, 
+        [this]() { return m_pOdometry->GetPose(); }, 
+        RamseteController(dDefaultBeta, dDefaultZeta), 
+        SimpleMotorFeedforward<units::meters>(kDefaultS, kDefaultV, kDefaultA), 
+        kDriveKinematics, 
+        [this]() { return GetWheelSpeeds(); }, 
+        frc2::PIDController(dDefaultProportional, dDefaultIntegral, dDefaultDerivative), 
+        frc2::PIDController(dDefaultProportional, dDefaultIntegral, dDefaultDerivative), 
+        [this](auto left, auto right) { SetDrivePowers(left, right); }
+    );
+}
+
+/******************************************************************************
+    Description:	Sets the voltage on each motor to the desired voltage
+	Arguments:		volt_t dLeftVoltage, volt_t dRightVoltage
+	Returns:		Nothing
+******************************************************************************/
+void CDrive::SetDrivePowers(volt_t dLeftVoltage, volt_t dRightVoltage)
+{
+	m_pLeadDriveMotor1->SetMotorVoltage((double)dLeftVoltage);
+	m_pLeadDriveMotor2->SetMotorVoltage((double)dRightVoltage);
+}
+
+/******************************************************************************
+    Description:	Gets the wheel velocities in m/s
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+DifferentialDriveWheelSpeeds CDrive::GetWheelSpeeds()
+{
+	return {meters_per_second_t(m_pLeadDriveMotor1->GetActual(false) / 39.3701), meters_per_second_t(m_pLeadDriveMotor2->GetActual(false) / 39.3701)};
 }

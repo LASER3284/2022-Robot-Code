@@ -17,6 +17,7 @@
 #include <frc/Joystick.h>
 #include <frc/drive/DifferentialDrive.h>
 #include <frc/kinematics/DifferentialDriveOdometry.h>
+#include <frc/kinematics/DifferentialDriveWheelSpeeds.h>
 #include <frc2/command/RamseteCommand.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
 #include <frc/trajectory/TrajectoryConfig.h>
@@ -27,9 +28,21 @@
 
 using namespace ctre::phoenix::motorcontrol::can;
 using namespace frc;
+using namespace frc2;
+using namespace std;
+using namespace units;
 
 // Declare constants
-const double dJoystickDeadzone					= 0.100;
+const double	dJoystickDeadzone						= 0.100;
+const double	dDefaultBeta							= 1.100;	// 1.800
+const double	dDefaultZeta							= 0.500;	// 0.9
+const double	dDefaultProportional					= 0.265;	// Left drive proportional value. // 0.000179
+const double	dDefaultIntegral						= 0.000;	// Left drive integral value.
+const double	dDefaultDerivative						= 0.000;	// Left drive derivative value.
+const auto		kDefaultS										= 0.39_V;								        //	|	Drive characterization constants.
+const auto		kDefaultV										= 0.0544 * 1_V * 1_s / 1_in;			        //	|	Drive characterization constants.
+const auto		kDefaultA										= 0.00583 * 1_V * 1_s * 1_s / 1_in;				//	|	Drive characterization constants.
+const DifferentialDriveKinematics	kDriveKinematics	= DifferentialDriveKinematics(inch_t(30.000));	//  |	Drive characterization constants.
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -45,10 +58,14 @@ public:
 	~CDrive();
 	void Init();
 	void Tick();
-	void Stop();
+	void ForceStop();
 	void ResetOdometry();
 	void SetJoystickControl(bool bJoystickControl);
 	void SetDriveSafety(bool bDriveSafety);
+	void SetTrajectory(int nPath);
+	void FollowTrajectory();
+	DifferentialDriveWheelSpeeds GetWheelSpeeds();
+	void SetDrivePowers(volt_t dLeftVoltage, volt_t dRightVoltage);
 
 private:
 	// Declare class objects and variables.
@@ -62,8 +79,9 @@ private:
 	DifferentialDrive*						m_pRobotDrive;
 	Timer*									m_pTimer;
 	CTrajectoryConstants*					m_pTrajectoryConstants;
-	//DifferentialDriveOdometry*				m_pOdometry;
-	//Trajectory								m_Trajectory;
+	DifferentialDriveOdometry*				m_pOdometry;
+	RamseteCommand*							m_pRamseteCommand;
+	Trajectory								m_Trajectory;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif

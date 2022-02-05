@@ -39,7 +39,8 @@ private:
 	CANSparkMax*	m_pIntakeMotor2;
 	WPI_TalonSRX*	m_pIntakeDeployMotorController;
 
-	bool m_bIntakePosition;
+	int m_bIntakeDown;
+	int m_bIntakeUp;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif

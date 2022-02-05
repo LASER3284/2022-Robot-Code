@@ -25,7 +25,7 @@ CRobotMain::CRobotMain()
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
 	m_pIntake					= new CIntake(3, 7, 8, 9, 5, false);
-
+	m_pShooter					= new CShooter(m_pAuxController);
 	m_nAutoState				= eAutoIdle;
 	m_dStartTime				= 0.0;
 	m_nPreviousState			= eTeleopStopped;
@@ -127,7 +127,7 @@ void CRobotMain::TeleopPeriodic()
 	// If the drive controller is pressing Select, stop the drive train
 	if (m_pDriveController->GetRawButtonPressed(eBack))
 	{
-		m_pDrive->Stop();
+		m_pDrive->ForceStop();
 	}
 	if (m_pDriveController->GetRawButtonReleased(eBack))
 	{
@@ -175,9 +175,7 @@ void CRobotMain::TestInit()
 ******************************************************************************/
 void CRobotMain::TestPeriodic()
 {
-	if (m_pAuxController->GetRawButtonPressed(eButtonX)) m_pIntake->IntakeDown();
-	if (m_pAuxController->GetRawButtonPressed(eButtonY)) m_pIntake->IntakeUp();
-	m_pIntake->IntakeDeployHardStop();
+	
 }
 
 #ifndef RUNNING_FRC_TESTS
