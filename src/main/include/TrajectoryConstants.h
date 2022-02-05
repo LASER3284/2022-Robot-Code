@@ -19,7 +19,8 @@ using namespace wpi;
 
 enum Paths {
 	eTestPath = 1,
-	eAdvancement
+	eAdvancement1,
+	eAdvancement2
 };
 ///////////////////////////////////////////////////////////////////////////////
 

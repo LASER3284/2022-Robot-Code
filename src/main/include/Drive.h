@@ -39,9 +39,9 @@ const double	dDefaultZeta							= 0.500;	// 0.9
 const double	dDefaultProportional					= 0.265;	// Left drive proportional value. // 0.000179
 const double	dDefaultIntegral						= 0.000;	// Left drive integral value.
 const double	dDefaultDerivative						= 0.000;	// Left drive derivative value.
-const auto		kDefaultS										= 0.39_V;								        //	|	Drive characterization constants.
-const auto		kDefaultV										= 0.0544 * 1_V * 1_s / 1_in;			        //	|	Drive characterization constants.
-const auto		kDefaultA										= 0.00583 * 1_V * 1_s * 1_s / 1_in;				//	|	Drive characterization constants.
+const auto		kDefaultS								= 0.39_V;								        //	|	Drive characterization constants.
+const auto		kDefaultV								= 0.0544 * 1_V * 1_s / 1_in;			        //	|	Drive characterization constants.
+const auto		kDefaultA								= 0.00583 * 1_V * 1_s * 1_s / 1_in;				//	|	Drive characterization constants.
 const DifferentialDriveKinematics	kDriveKinematics	= DifferentialDriveKinematics(inch_t(30.000));	//  |	Drive characterization constants.
 ///////////////////////////////////////////////////////////////////////////////
 

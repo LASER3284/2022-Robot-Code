@@ -20,7 +20,6 @@ using namespace rev;
 		Arguments:				None
 		Derived From:	        Nothing
 ******************************************************************************/
-
 class CTransfer 
 {
 public:

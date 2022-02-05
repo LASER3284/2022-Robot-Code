@@ -26,9 +26,9 @@ CRobotMain::CRobotMain()
 	m_pAutoChooser				= new SendableChooser<string>();
 	m_pIntake					= new CIntake(3, 7, 8, 9, 5, false);
 
-	m_nAutoState				= eAutoIdle;
+	m_nAutoState				= eAutoStopped;
 	m_dStartTime				= 0.0;
-	m_nPreviousState			= eTeleopStopped;
+	//m_nPreviousState			= eTeleopStopped;
 }
 
 /******************************************************************************
@@ -64,12 +64,7 @@ void CRobotMain::RobotInit()
 
 	// Setup autonomous chooser.
 	m_pAutoChooser->SetDefaultOption("Autonomous Idle", "Autonomous Idle");
-	m_pAutoChooser->AddOption("Alliance Trench", "Alliance Trench");
-	m_pAutoChooser->AddOption("Front Shield Generator", "Front Shield Generator");
-	m_pAutoChooser->AddOption("Side Shield Generator", "Side Sheild Generator");
-	m_pAutoChooser->AddOption("Opposing Trench", "Opposing Trench");
-	m_pAutoChooser->AddOption("Power Port", "Power Port");
-	m_pAutoChooser->AddOption("Test Path", "Test Path");
+	m_pAutoChooser->AddOption("Advancement", "Advancement");
 	SmartDashboard::PutData(m_pAutoChooser);
 
 	m_pTimer->Start();
@@ -92,8 +87,27 @@ void CRobotMain::RobotPeriodic()
 ******************************************************************************/
 void CRobotMain::AutonomousInit()
 {
+	// Init Drive and disable joystick
 	m_pDrive->Init();
 	m_pDrive->SetJoystickControl(false);
+
+	// TODO: deploy intake for all of auto period
+
+	// Record start time
+	m_dStartTime = (double)m_pTimer->Get();
+
+	// Get selected option and switch m_nPathState based on that
+	m_strAutoSelected = m_pAutoChooser->GetSelected();
+	m_nAutoState = eAutoIdle;
+	m_nPathState = -1;
+	if (m_strAutoSelected == "Advancement")
+	{
+		m_nPathState = eAdvancement1;
+		m_nAutoState = eAutoFollowing;
+	}
+	
+	// Set selected trajectory
+	m_pDrive->SetTrajectory(m_nPathState);
 }
 
 /******************************************************************************
@@ -103,7 +117,35 @@ void CRobotMain::AutonomousInit()
 ******************************************************************************/
 void CRobotMain::AutonomousPeriodic() 
 {
+	double dElapsedTime = m_pTimer->Get() - m_dStartTime;
 
+	switch (m_nAutoState) 
+	{
+		// Force stop everything
+		case eAutoStopped:
+			m_pDrive->ForceStop();
+			m_nAutoState = eAutoIdle;
+			break;
+
+		// Do nothing
+		case eAutoIdle:
+			break;
+
+		// Aim robot based on vision
+		case eAutoAiming:
+			// TODO: apply Vision to this
+			break;
+
+		// Fire ball towards Hub
+		case eAutoFiring:
+			// TODO: add firing routines with shooter
+			break;
+
+		// Follow selected trajectory
+		case eAutoFollowing:
+			m_pDrive->FollowTrajectory();
+			break;
+	}
 }
 
 /******************************************************************************

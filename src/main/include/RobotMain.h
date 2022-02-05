@@ -36,7 +36,9 @@ private:
 	enum AutoStates {
 		eAutoStopped = 0,
 		eAutoIdle,
-
+		eAutoAiming,
+		eAutoFiring,
+		eAutoFollowing
 	};
 
 	enum TeleopStates {
@@ -57,9 +59,10 @@ private:
 	Timer*								m_pTimer;
 	CIntake*							m_pIntake;
 
-	double	m_dStartTime;
-	int		m_nAutoState;
-	int		m_nTeleopState;
-	int		m_nPreviousState;
+	double	m_dStartTime;							// A double representing start time
+	int		m_nAutoState;							// Current Auto state
+	int		m_nPathState;							// Current Auto sub-path
+	int		m_nTeleopState;							// Current Teleop state
+	//int		m_nPreviousState;						// Previous state
 };
 #endif
