@@ -38,8 +38,6 @@ private:
 	// Declare class objects and variables.
 	WPI_TalonFX*		m_pLiftMotor1;
 	WPI_TalonFX*		m_pLiftMotor2;
-	WPI_TalonFX*		m_pLiftMotor3;
-	WPI_TalonFX*		m_pLiftMotor4;
 	Solenoid*			m_pLeftSolenoid;
 	Solenoid*			m_pRightSolenoid;
 
