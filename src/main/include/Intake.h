@@ -27,9 +27,10 @@ public:
     CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeDownLimitSwitch, int nIntakeUpLimitSwitch, int nDeployController, bool IntakePosition);
     ~CIntake();
 	void CheckIntakePosition();
-	void ToggleIntake();
+	void ToggleIntake(bool bUp);
 	void IntakeUp();
 	void IntakeDown();
+	void IntakeDeployHardStop();
 
 private:
 	DigitalInput*	m_pLimitSwitchDown;
@@ -38,8 +39,9 @@ private:
 	CANSparkMax*	m_pIntakeMotor2;
 	WPI_TalonSRX*	m_pIntakeDeployMotorController;
 
-	int m_bIntakeDown;
-	int m_bIntakeUp;
+	int		m_bIntakeDown;
+	int		m_bIntakeUp;
+	bool	m_bIntakePosition;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif

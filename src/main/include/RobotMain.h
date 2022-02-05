@@ -9,6 +9,7 @@
 
 #include "Drive.h"
 #include "Intake.h"
+#include "Shooter.h"
 
 #include <string>
 #include <frc/TimedRobot.h>
@@ -58,6 +59,7 @@ private:
 	CDrive*								m_pDrive;
 	Timer*								m_pTimer;
 	CIntake*							m_pIntake;
+	CShooter*							m_pShooter;
 
 	double	m_dStartTime;							// A double representing start time
 	int		m_nAutoState;							// Current Auto state
