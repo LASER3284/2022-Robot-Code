@@ -30,6 +30,7 @@ public:
 	void ToggleIntake(bool bUp);
 	void IntakeUp();
 	void IntakeDown();
+	void IntakeDeployHardStop();
 
 private:
 	DigitalInput*	m_pLimitSwitchDown;

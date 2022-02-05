@@ -81,3 +81,17 @@ void CIntake::IntakeDown()
 		m_pIntakeDeployMotorController->Set(0.000);
 	}
 }
+/******************************************************************************
+	Description:	None	
+	Arguments:		None
+	Returns:		None
+******************************************************************************/
+void CIntake::IntakeDeployHardStop()
+{
+	CheckIntakePosition();
+
+	if(m_bIntakePosition)
+	{
+		m_pIntakeDeployMotorController->Set(0.000);
+	}
+}
