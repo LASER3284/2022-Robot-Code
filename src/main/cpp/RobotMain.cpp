@@ -25,7 +25,7 @@ CRobotMain::CRobotMain()
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
 	m_pIntake					= new CIntake(3, 7, 8, 9, 5, false);
-
+	m_pShooter					= new CShooter(m_pAuxController);
 	m_nAutoState				= eAutoIdle;
 	m_dStartTime				= 0.0;
 	m_nPreviousState			= eTeleopStopped;

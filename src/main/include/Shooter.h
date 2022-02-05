@@ -15,6 +15,8 @@
 
 using namespace frc;
 using namespace units;
+
+const double dFlywheelMotorSpeed = 1.000;
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -28,11 +30,17 @@ public:
     // Declare class methods.
     CShooter(Joystick* pShooterJoystick);
     ~CShooter();
-	
+    void Init();
+    void StartFlywheel();
+	void Stop();
+    void SetSafety(bool bSafety);
 private:
     // Declare class objects and variables.
-    CFalconMotion*      m_pFlywheelMotor1;
-    CFalconMotion*      m_pFlywheelMotor2;
+    WPI_TalonFX*      m_pFlywheelMotor1;
+    WPI_TalonFX*      m_pFlywheelMotor2;
+
+    bool m_bSafety;
 };
 ///////////////////////////////////////////////////////////////////////////////
+
 #endif
