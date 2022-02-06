@@ -24,7 +24,7 @@ CRobotMain::CRobotMain()
 	m_pTimer					= new Timer();
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
-	m_pIntake					= new CIntake(3, 7, 8, 9, 5, false);
+	m_pFrontIntake				= new CIntake(3, 7, 8, 0, 5, false);
 
 	m_nAutoState				= eAutoStopped;
 	m_dStartTime				= 0.0;
@@ -43,14 +43,14 @@ CRobotMain::~CRobotMain()
 	delete m_pDrive;
 	delete m_pTimer;
 	delete m_pAutoChooser;
-	delete m_pIntake;
+	delete m_pFrontIntake;
 
 	m_pDriveController	= nullptr;
 	m_pAuxController	= nullptr;
 	m_pDrive			= nullptr;
 	m_pTimer			= nullptr;
 	m_pAutoChooser		= nullptr;
-	m_pIntake			= nullptr;
+	m_pFrontIntake		= nullptr;
 }
 
 /******************************************************************************
@@ -144,6 +144,7 @@ void CRobotMain::AutonomousPeriodic()
 		// Follow selected trajectory
 		case eAutoFollowing:
 			m_pDrive->FollowTrajectory();
+			if (m_pDrive->IsTrajectoryFinished()) m_nAutoState = eAutoAiming;
 			break;
 	}
 }
@@ -157,6 +158,7 @@ void CRobotMain::TeleopInit()
 {
 	m_pDrive->Init();
 	m_pDrive->SetJoystickControl(true);
+	m_pFrontIntake->Init();
 }
 
 /******************************************************************************
@@ -177,6 +179,14 @@ void CRobotMain::TeleopPeriodic()
 	}
 	
 	m_pDrive->Tick();
+
+	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB)) m_pFrontIntake->ToggleIntake();
+	if (m_pFrontIntake->IsGoalPressed())
+	{
+		m_pFrontIntake->StopDeploy();
+		m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
+
+	}
 }
 
 /******************************************************************************
@@ -207,7 +217,7 @@ void CRobotMain::DisabledPeriodic()
 ******************************************************************************/
 void CRobotMain::TestInit()
 {
-
+	m_pFrontIntake->Init();
 }
 
 /******************************************************************************
@@ -217,7 +227,13 @@ void CRobotMain::TestInit()
 ******************************************************************************/
 void CRobotMain::TestPeriodic()
 {
-	
+	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB)) m_pFrontIntake->ToggleIntake();
+	if (m_pFrontIntake->IsGoalPressed())
+	{
+		m_pFrontIntake->StopDeploy();
+		m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
+
+	}
 }
 
 #ifndef RUNNING_FRC_TESTS

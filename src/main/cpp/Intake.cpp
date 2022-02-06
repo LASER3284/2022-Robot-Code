@@ -20,9 +20,8 @@ CIntake::CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeDownLimitSwitc
 	m_pIntakeDeployMotorController	= new WPI_TalonSRX(nDeployController);
 	m_pLimitSwitchDown				= new DigitalInput(nIntakeDownLimitSwitch);
 	m_pLimitSwitchUp				= new DigitalInput(nIntakeUpLimitSwitch);
-	m_bIntakeUp						= bIntakePosition;
-	m_bIntakeDown					= !bIntakePosition;
 }
+
 /******************************************************************************
 	Description:	CIntake destructor, delete local class pointers
 	Arguments:		None
@@ -42,60 +41,46 @@ CIntake::~CIntake()
 }
 
 /******************************************************************************
-	Description:	Check intake position
+	Description:	Init local variables and motors
 	Arguments:		None
-	Returns:		IntakePosition
+	Returns:		Nothing
 ******************************************************************************/
-void CIntake::CheckIntakePosition()
+void CIntake::Init()
 {
-	m_bIntakeUp		= m_pLimitSwitchUp->Get();
-	m_bIntakeDown	= m_pLimitSwitchDown->Get();
-
-	if (m_bIntakeDown || m_bIntakeUp) m_pIntakeDeployMotorController->Set(0.000);
+	// Set the goal switch to down
+	m_bGoal = false;
+	m_bIntakeUp = m_pLimitSwitchUp->Get();
+	m_bIntakeDown = m_pLimitSwitchDown->Get();
 }
-/******************************************************************************
-	Description:	None
-	Arguments:		None
-	Returns:		None
-******************************************************************************/
-void CIntake::IntakeUp()
-{
-	CheckIntakePosition();
 
-	if(m_bIntakePosition)
-	{
-		m_pIntakeDeployMotorController->Set(-0.250);
-	} else {
-		m_pIntakeDeployMotorController->Set(0.000);
-	}
+/******************************************************************************
+	Description:	Determines if the goal switch (m_bGoal) is pressed
+	Arguments:		None
+	Returns:		bool
+******************************************************************************/
+bool CIntake::IsGoalPressed()
+{
+	if (m_bGoal)	{	return m_pLimitSwitchUp->Get();		}
+	else			{	return !m_pLimitSwitchDown->Get();	}
 }
-/******************************************************************************
-	Description:	None	
-	Arguments:		None
-	Returns:		None
-******************************************************************************/
-void CIntake::IntakeDown()
-{
-	CheckIntakePosition();
 
-	if(m_bIntakePosition)
-	{
-		m_pIntakeDeployMotorController->Set(0.250);
-	} else {
-		m_pIntakeDeployMotorController->Set(0.000);
-	}
+/******************************************************************************
+	Description:	Toggles intake based on goal switch (m_bGoal)
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CIntake::ToggleIntake()
+{
+	if (m_bGoal)	{	m_pIntakeDeployMotorController->Set(-0.250);	}		// Reverse to take it up
+	else			{	m_pIntakeDeployMotorController->Set(0.250);		}		// Forward to take it down
 }
-/******************************************************************************
-	Description:	None	
-	Arguments:		None
-	Returns:		None
-******************************************************************************/
-void CIntake::IntakeDeployHardStop()
-{
-	CheckIntakePosition();
 
-	if(m_bIntakePosition)
-	{
-		m_pIntakeDeployMotorController->Set(0.000);
-	}
+/******************************************************************************
+	Description:	Stops the deploy motor 
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CIntake::StopDeploy()
+{
+	m_pIntakeDeployMotorController->Set(0.000);
 }

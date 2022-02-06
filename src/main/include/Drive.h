@@ -66,6 +66,7 @@ public:
 	void FollowTrajectory();
 	DifferentialDriveWheelSpeeds GetWheelSpeeds();
 	void SetDrivePowers(volt_t dLeftVoltage, volt_t dRightVoltage);
+	bool IsTrajectoryFinished();
 
 private:
 	// Declare class objects and variables.
