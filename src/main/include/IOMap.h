@@ -34,6 +34,8 @@ const int nBeltMotor2                   =  17;      // Back belt motor        \|
 const int nBeltMotor3                   =  18;      // Top belt motor         (SPARK MX controller)
 const int nIntakeDeployMotor1           =  19;      // Intake Deploy motor one(TALON SRX controller)
 const int nIntakeDeployMotor2           =  20;      // Intake Deploy motor two\|/
+const int nPCM1                         =   9;
+const int nPCM2                         =  10;
 
 // PWM Channels.
 const int nBlinkinID					=	1;		// PWM channel for Blinkin LED driver

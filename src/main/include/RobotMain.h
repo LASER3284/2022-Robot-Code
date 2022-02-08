@@ -10,6 +10,7 @@
 #include "Drive.h"
 #include "Intake.h"
 #include "Shooter.h"
+#include "Lift.h"
 
 #include <string>
 #include <frc/TimedRobot.h>

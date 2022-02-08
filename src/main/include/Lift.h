@@ -15,6 +15,9 @@ using namespace frc;
 
 // LiftStates enumerator
 enum LiftStates {eLiftIdle = 0};
+
+const double nCounterRev = 2048.0;
+const double dCountToMAX = 2.0;
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -40,9 +43,6 @@ private:
 	WPI_TalonFX*		m_pLiftMotor2;
 	Solenoid*			m_pLeftSolenoid;
 	Solenoid*			m_pRightSolenoid;
-
-	bool		bExtended;
-	bool		bSwingExtended;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif
