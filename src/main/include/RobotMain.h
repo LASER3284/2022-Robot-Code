@@ -38,7 +38,9 @@ private:
 	enum AutoStates {
 		eAutoStopped = 0,
 		eAutoIdle,
-
+		eAutoAiming,
+		eAutoFiring,
+		eAutoFollowing
 	};
 
 	enum TeleopStates {
@@ -51,18 +53,19 @@ private:
 		eTeleopFiring
 	};
 
-	frc::SendableChooser<std::string>*	m_pAutoChooser;
+	SendableChooser<std::string>*		m_pAutoChooser;
 	std::string							m_strAutoSelected;
 	Joystick*							m_pDriveController;
 	Joystick*							m_pAuxController;
 	CDrive*								m_pDrive;
 	Timer*								m_pTimer;
-	CIntake*							m_pIntake;
+	CIntake*							m_pFrontIntake;
 	CShooter*							m_pShooter;
 
-	double	m_dStartTime;
-	int		m_nAutoState;
-	int		m_nTeleopState;
-	int		m_nPreviousState;
+	double	m_dStartTime;							// A double representing start time
+	int		m_nAutoState;							// Current Auto state
+	int		m_nPathState;							// Current Auto sub-path
+	int		m_nTeleopState;							// Current Teleop state
+	//int		m_nPreviousState;						// Previous state
 };
 #endif

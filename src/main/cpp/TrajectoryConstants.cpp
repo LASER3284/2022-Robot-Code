@@ -22,11 +22,16 @@ void CTrajectoryConstants::SelectTrajectory(int nSelection)
 			m_SelectedPath = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/TestPath.wpilib.json");
 			break;
 
-		case eAdvancement:
+		case eAdvancement1:
 			// Read and store the trajectory from a pre-generated JSON file
-			m_SelectedPath = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/Advancement.wpilib.json");
+			m_SelectedPath = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/Advancement1.wpilib.json");
 			break;
 			
+		case eAdvancement2:
+			// Read and store the trajectory from a pre-generated JSON file
+			m_SelectedPath = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/Advancement2.wpilib.json");
+			break;
+		
 		default:
 			// Read and store the trajectory from a pre-generated JSON file
 			m_SelectedPath = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/TestPath.wpilib.json");

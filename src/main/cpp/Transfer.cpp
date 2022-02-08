@@ -15,7 +15,6 @@
 	Arguments:		None
 	Derived from:	Nothing
 ******************************************************************************/
-
 CTransfer::CTransfer()
 {
 	m_pTopBeltMotor		= new CANSparkMax(nBeltMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
@@ -28,7 +27,6 @@ CTransfer::CTransfer()
 	Arguments:		None
 	Derived from:	Nothing
 ******************************************************************************/
-
 CTransfer::~CTransfer()
 {
 	delete m_pTopBeltMotor;
@@ -45,7 +43,6 @@ CTransfer::~CTransfer()
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
-
 void CTransfer::Init()
 {
 	

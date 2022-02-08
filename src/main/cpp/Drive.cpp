@@ -225,3 +225,13 @@ DifferentialDriveWheelSpeeds CDrive::GetWheelSpeeds()
 {
 	return {meters_per_second_t(m_pLeadDriveMotor1->GetActual(false) / 39.3701), meters_per_second_t(m_pLeadDriveMotor2->GetActual(false) / 39.3701)};
 }
+
+/******************************************************************************
+    Description:	Returns bool on whether the trajectory has finished
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+bool CDrive::IsTrajectoryFinished()
+{
+	return m_pRamseteCommand->IsFinished();
+}
