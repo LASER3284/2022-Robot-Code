@@ -94,7 +94,7 @@ void CRobotMain::AutonomousInit()
 	// TODO: deploy intake for all of auto period
 
 	// Record start time
-	m_dStartTime = (double)m_pTimer->Get();
+	//m_dStartTime = (double)m_pTimer->Get();
 
 	// Get selected option and switch m_nPathState based on that
 	m_strAutoSelected = m_pAutoChooser->GetSelected();
@@ -117,8 +117,6 @@ void CRobotMain::AutonomousInit()
 ******************************************************************************/
 void CRobotMain::AutonomousPeriodic() 
 {
-	double dElapsedTime = (double)m_pTimer->Get() - m_dStartTime;
-
 	switch (m_nAutoState) 
 	{
 		// Force stop everything
@@ -180,12 +178,16 @@ void CRobotMain::TeleopPeriodic()
 	
 	m_pDrive->Tick();
 
-	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB)) m_pFrontIntake->ToggleIntake();
+	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB))
+	{
+		m_pFrontIntake->ToggleIntake();
+	}
 	if (m_pFrontIntake->IsGoalPressed())
 	{
+		if (!m_pFrontIntake->m_bGoal) m_pFrontIntake->StartIntake();
+		else m_pFrontIntake->StopIntake();
 		m_pFrontIntake->StopDeploy();
 		m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
-
 	}
 }
 

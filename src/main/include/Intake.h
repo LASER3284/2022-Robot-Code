@@ -31,6 +31,8 @@ public:
 	bool IsGoalPressed();
 	void ToggleIntake();
 	void StopDeploy();
+	void StartIntake();
+	void StopIntake();
 
 	// Public members
 	bool m_bGoal;		// If true, up; else, down

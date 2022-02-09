@@ -195,7 +195,7 @@ void CDrive::SetTrajectory(int nPath)
 	m_pRamseteCommand = new frc2::RamseteCommand(
         m_Trajectory, 
         [this]() { return m_pOdometry->GetPose(); }, 
-        RamseteController(dDefaultBeta, dDefaultZeta), 
+        RamseteController(), 
         SimpleMotorFeedforward<units::meters>(kDefaultS, kDefaultV, kDefaultA), 
         kDriveKinematics, 
         [this]() { return GetWheelSpeeds(); }, 
