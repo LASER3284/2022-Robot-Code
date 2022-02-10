@@ -13,10 +13,11 @@
 	Arguments:		None
 	Derived from:	Nothing
 ******************************************************************************/
-CShooter::CShooter(Joystick* pShooterJoystick)
+CShooter::CShooter()
+
 {
-	m_pFlywheelMotor1		= new WPI_TalonFX(nFlywheelMotor1);
-	m_pFlywheelMotor2		= new WPI_TalonFX(nFlywheelMotor2);
+	m_pFlywheelMotor1		= new CANSparkMax(3, CANSparkMaxLowLevel::MotorType::kBrushless);			// we will fix the format later 
+	m_pFlywheelMotor2		= new CANSparkMax(7, CANSparkMaxLowLevel::MotorType::kBrushless);
 
 	m_bSafety				= true;
 }		

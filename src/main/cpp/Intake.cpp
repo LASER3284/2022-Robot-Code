@@ -48,9 +48,12 @@ CIntake::~CIntake()
 void CIntake::Init()
 {
 	// Set the goal switch to down
-	m_bGoal = false;
-	m_bIntakeUp = m_pLimitSwitchUp->Get();
-	m_bIntakeDown = m_pLimitSwitchDown->Get();
+	m_bGoal			= false;
+	m_bIntakeUp		= m_pLimitSwitchUp->Get();
+	m_bIntakeDown	= m_pLimitSwitchDown->Get();
+
+	// Set right motor to follow the left
+	m_pIntakeMotor2->Follow(*m_pIntakeMotor1);
 }
 
 /******************************************************************************
@@ -61,7 +64,7 @@ void CIntake::Init()
 bool CIntake::IsGoalPressed()
 {
 	if (m_bGoal)	{	return m_pLimitSwitchUp->Get();		}
-	else			{	return !m_pLimitSwitchDown->Get();	}
+	else			{	return !m_pLimitSwitchDown->Get();	}	// Inverted to make it work, idk why it does
 }
 
 /******************************************************************************
@@ -83,4 +86,24 @@ void CIntake::ToggleIntake()
 void CIntake::StopDeploy()
 {
 	m_pIntakeDeployMotorController->Set(0.000);
+}
+
+/******************************************************************************
+	Description:	Starts NEO 550 Intake motors
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CIntake::StartIntake()
+{
+	if (IsGoalPressed() && !m_bGoal) m_pIntakeMotor1->Set(1.000);
+}
+
+/******************************************************************************
+	Description:	Stops NEO 550 Intake motors
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CIntake::StopIntake()
+{
+	m_pIntakeMotor1->Set(0.000);
 }

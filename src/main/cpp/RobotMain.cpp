@@ -24,9 +24,9 @@ CRobotMain::CRobotMain()
 	m_pTimer					= new Timer();
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
-	m_pFrontIntake				= new CIntake(3, 7, 8, 0, 5, false);
 	m_pLift 					= new CLift();
-
+	m_pFrontIntake				= new CIntake(4, 9, 8, 0, 5, false);
+	m_pShooter					= new CShooter();
 	m_nAutoState				= eAutoStopped;
 	m_dStartTime				= 0.0;
 	//m_nPreviousState			= eTeleopStopped;
@@ -95,7 +95,7 @@ void CRobotMain::AutonomousInit()
 	// TODO: deploy intake for all of auto period
 
 	// Record start time
-	m_dStartTime = (double)m_pTimer->Get();
+	//m_dStartTime = (double)m_pTimer->Get();
 
 	// Get selected option and switch m_nPathState based on that
 	m_strAutoSelected = m_pAutoChooser->GetSelected();
@@ -118,8 +118,6 @@ void CRobotMain::AutonomousInit()
 ******************************************************************************/
 void CRobotMain::AutonomousPeriodic() 
 {
-	double dElapsedTime = (double)m_pTimer->Get() - m_dStartTime;
-
 	switch (m_nAutoState) 
 	{
 		// Force stop everything
@@ -160,6 +158,8 @@ void CRobotMain::TeleopInit()
 	m_pDrive->Init();
 	m_pDrive->SetJoystickControl(true);
 	m_pFrontIntake->Init();
+	m_pShooter->SetSafety(false);
+	m_pShooter->Init();
 }
 
 /******************************************************************************
@@ -181,13 +181,20 @@ void CRobotMain::TeleopPeriodic()
 	
 	m_pDrive->Tick();
 
-	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB)) m_pFrontIntake->ToggleIntake();
+	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB))
+	{
+		m_pFrontIntake->ToggleIntake();
+	}
 	if (m_pFrontIntake->IsGoalPressed())
 	{
+		if (!m_pFrontIntake->m_bGoal) m_pFrontIntake->StartIntake();
+		else m_pFrontIntake->StopIntake();
 		m_pFrontIntake->StopDeploy();
 		m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
-
 	}
+
+	if (m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->StartFlywheel();
+	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->Stop();
 }
 
 /******************************************************************************
