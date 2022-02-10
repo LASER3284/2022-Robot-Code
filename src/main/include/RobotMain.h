@@ -61,6 +61,7 @@ private:
 	Timer*								m_pTimer;
 	CIntake*							m_pFrontIntake;
 	CShooter*							m_pShooter;
+	CLift*								m_pLift;
 
 	double	m_dStartTime;							// A double representing start time
 	int		m_nAutoState;							// Current Auto state

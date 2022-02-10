@@ -25,6 +25,7 @@ CRobotMain::CRobotMain()
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
 	m_pFrontIntake				= new CIntake(3, 7, 8, 0, 5, false);
+	m_pLift 					= new CLift();
 
 	m_nAutoState				= eAutoStopped;
 	m_dStartTime				= 0.0;

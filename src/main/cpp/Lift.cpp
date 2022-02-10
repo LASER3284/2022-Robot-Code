@@ -29,9 +29,13 @@ CLift::~CLift()
 {
 	delete m_pLiftMotor1;
 	delete m_pLiftMotor2;
+	delete m_pLeftSolenoid;
+	delete m_pRightSolenoid;
 	
 	m_pLiftMotor1		= nullptr;
 	m_pLiftMotor2		= nullptr;
+	m_pLeftSolenoid		= nullptr;
+	m_pRightSolenoid	= nullptr;
 }
 
 /******************************************************************************
