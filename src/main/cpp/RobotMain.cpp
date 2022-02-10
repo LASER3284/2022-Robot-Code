@@ -30,6 +30,7 @@ CRobotMain::CRobotMain()
 	m_nAutoState				= eAutoStopped;
 	m_dStartTime				= 0.0;
 	//m_nPreviousState			= eTeleopStopped;
+	m_pPrevVisionPacket         = new VisionPacket();
 }
 
 /******************************************************************************
@@ -45,6 +46,7 @@ CRobotMain::~CRobotMain()
 	delete m_pTimer;
 	delete m_pAutoChooser;
 	delete m_pFrontIntake;
+	delete m_pPrevVisionPacket;
 
 	m_pDriveController	= nullptr;
 	m_pAuxController	= nullptr;
@@ -52,6 +54,7 @@ CRobotMain::~CRobotMain()
 	m_pTimer			= nullptr;
 	m_pAutoChooser		= nullptr;
 	m_pFrontIntake		= nullptr;
+	m_pPrevVisionPacket = nullptr;
 }
 
 /******************************************************************************
@@ -160,6 +163,7 @@ void CRobotMain::TeleopInit()
 	m_pFrontIntake->Init();
 	m_pShooter->SetSafety(false);
 	m_pShooter->Init();
+	m_pPrevVisionPacket = new VisionPacket();
 }
 
 /******************************************************************************
@@ -178,9 +182,28 @@ void CRobotMain::TeleopPeriodic()
 	{
 		m_pDrive->SetJoystickControl(true);
 	}
-	
-	m_pDrive->Tick();
 
+	// Retrive the processed vision packet from our coprocessor.
+	string_view processed_vision = SmartDashboard::GetRaw("processed_vision", NULL);
+	if(processed_vision != NULL) { // If the processed_vision is NULL, then the vision code isn't running (?)
+		const char* pVisionPacketArr = string(processed_vision).c_str();
+		VisionPacket* pVisionPacket = new VisionPacket(pVisionPacketArr);
+
+		if(pVisionPacket->m_randVal != 0xFF) { // First byte being equal to 0xFF means that the packet is a "null" packet (e.g no detections)
+			if(pVisionPacket->m_randVal != m_pPrevVisionPacket->m_randVal) { // Check if we received a different packet from the last packet
+				
+			}
+		}
+		else m_pDrive->Tick();
+	}
+	else m_pDrive->Tick();
+
+	//if (pVisionPacket[0] != 0xFF)
+	//{
+	//	if (pVisionPacket[1] != m_pPrevVisionPacket[1]);
+	//} else m_pDrive->Tick();
+
+	// Manually tick intake
 	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB))
 	{
 		m_pFrontIntake->ToggleIntake();
@@ -193,6 +216,7 @@ void CRobotMain::TeleopPeriodic()
 		m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
 	}
 
+	// Manually tick shooter
 	if (m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->StartFlywheel();
 	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->Stop();
 }

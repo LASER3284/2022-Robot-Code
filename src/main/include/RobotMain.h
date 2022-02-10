@@ -9,6 +9,7 @@
 
 #include "Drive.h"
 #include "Intake.h"
+#include "Vision.h"
 #include "Shooter.h"
 #include "Lift.h"
 
@@ -62,6 +63,7 @@ private:
 	CIntake*							m_pFrontIntake;
 	CShooter*							m_pShooter;
 	CLift*								m_pLift;
+	VisionPacket*								m_pPrevVisionPacket;
 
 	double	m_dStartTime;							// A double representing start time
 	int		m_nAutoState;							// Current Auto state
