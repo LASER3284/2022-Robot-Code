@@ -7,23 +7,34 @@
 #ifndef Vision_h
 #define Vison_h
 
-class VisionPacket {
+const double dAnglePerPixel     = 69.000 / 320.000;
+enum DetectionClass {
+    eBlueHangar = 0x01,
+    eRedHangar,
+    eHub,
+    eRedCargo,
+    eBlueCargo
+};
+
+class CVisionPacket {
 public:
-    VisionPacket();
-    VisionPacket(const char* pPacketArr);
-    ~VisionPacket();
+    CVisionPacket();
+    CVisionPacket(const char* pPacketArr);
+    ~CVisionPacket();
 
-    char m_randVal = 0xFF;
-    char m_detectionCount = 0xFF;
+    char m_nRandVal = 0xFF;
+    char m_nDetectionCount = 0xFF;
 
-    short m_x;
-    short m_y;
-    short m_width;
-    short m_height;
+    short   m_nX;
+    short   m_nY;
+    short   m_nWidth;
+    double  m_dHalfWidthAngle;
+    short   m_nHeight;
+    double  m_dHalfHeightAngle;
 
-    char m_confidence;
-    unsigned char m_class;
-    int m_depth;
+    char m_nConfidence;
+    unsigned char m_uClass;
+    int m_nDepth;
 };
 
 #endif

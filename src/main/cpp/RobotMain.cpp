@@ -8,6 +8,7 @@
 
 #include <fmt/core.h>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/DriverStation.h>
 ///////////////////////////////////////////////////////////////////////////////
 using namespace frc;
 using namespace std;
@@ -24,13 +25,13 @@ CRobotMain::CRobotMain()
 	m_pTimer					= new Timer();
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
-	m_pLift 					= new CLift();
-	m_pFrontIntake				= new CIntake(4, 9, 8, 0, 5, false);
-	m_pShooter					= new CShooter();
+	//m_pLift 					= new CLift();
+	//m_pFrontIntake				= new CIntake(4, 9, 8, 0, 5, false);
+	//m_pShooter					= new CShooter();
 	m_nAutoState				= eAutoStopped;
 	m_dStartTime				= 0.0;
 	//m_nPreviousState			= eTeleopStopped;
-	m_pPrevVisionPacket         = new VisionPacket();
+	m_pPrevVisionPacket         = new CVisionPacket();
 }
 
 /******************************************************************************
@@ -160,10 +161,10 @@ void CRobotMain::TeleopInit()
 {
 	m_pDrive->Init();
 	m_pDrive->SetJoystickControl(true);
-	m_pFrontIntake->Init();
-	m_pShooter->SetSafety(false);
-	m_pShooter->Init();
-	m_pPrevVisionPacket = new VisionPacket();
+	//m_pFrontIntake->Init();
+	//m_pShooter->SetSafety(false);
+	//m_pShooter->Init();
+	m_pPrevVisionPacket = new CVisionPacket();
 }
 
 /******************************************************************************
@@ -173,6 +174,10 @@ void CRobotMain::TeleopInit()
 ******************************************************************************/
 void CRobotMain::TeleopPeriodic()
 {
+	/**************************************************************************
+	    Description:	Drive stop and Joystick handling
+	**************************************************************************/
+
 	// If the drive controller is pressing Select, stop the drive train
 	if (m_pDriveController->GetRawButtonPressed(eBack))
 	{
@@ -183,26 +188,42 @@ void CRobotMain::TeleopPeriodic()
 		m_pDrive->SetJoystickControl(true);
 	}
 
-	// Retrive the processed vision packet from our coprocessor.
-	string_view processed_vision = SmartDashboard::GetRaw("processed_vision", NULL);
-	if(processed_vision != NULL) { // If the processed_vision is NULL, then the vision code isn't running (?)
-		const char* pVisionPacketArr = string(processed_vision).c_str();
-		VisionPacket* pVisionPacket = new VisionPacket(pVisionPacketArr);
+	/**************************************************************************
+	    Description:	Vision processing and ball trackings
+	**************************************************************************/
 
-		if(pVisionPacket->m_randVal != 0xFF) { // First byte being equal to 0xFF means that the packet is a "null" packet (e.g no detections)
-			if(pVisionPacket->m_randVal != m_pPrevVisionPacket->m_randVal) { // Check if we received a different packet from the last packet
-				
+	// Retrive the processed vision packet from our coprocessor.
+	string processed_vision = SmartDashboard::GetRaw("processed_vision", "");
+	// If the processed_vision is empty, then the vision code isn't running (?);
+	// Button A on drive controller must also have been pressed
+	if(!processed_vision.empty() && m_pDriveController->GetRawButtonPressed(eButtonA))
+	{
+		const char* pVisionPacketArr = processed_vision.c_str();
+		CVisionPacket* pVisionPacket = new CVisionPacket(pVisionPacketArr);
+
+		// First byte being equal to 0xFF means that the packet is a "null" packet (i.e no detections)
+		if(pVisionPacket->m_nRandVal != 0xFF)
+		{
+			// Check if we received a different packet from the last packet
+			if(pVisionPacket->m_nRandVal != m_pPrevVisionPacket->m_nRandVal)
+			{
+				DetectionClass kDetectClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eBlueCargo : eRedCargo);
+				if (pVisionPacket->m_uClass == kDetectClass) {
+					const double dTheta = (pVisionPacket->m_nX - 160) * dAnglePerPixel;
+					if (-pVisionPacket->m_dHalfWidthAngle < dTheta && dTheta < pVisionPacket->m_dHalfWidthAngle) m_pDrive->GoForwardUntuned();
+    				else m_pDrive->TurnByAngle(dTheta);
+    				m_pPrevVisionPacket = pVisionPacket;
+   				}
 			}
 		}
 		else m_pDrive->Tick();
 	}
 	else m_pDrive->Tick();
 
-	//if (pVisionPacket[0] != 0xFF)
-	//{
-	//	if (pVisionPacket[1] != m_pPrevVisionPacket[1]);
-	//} else m_pDrive->Tick();
-
+	/**************************************************************************
+	    Description:	Manual ticks
+	**************************************************************************/
+/*
 	// Manually tick intake
 	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB))
 	{
@@ -218,7 +239,7 @@ void CRobotMain::TeleopPeriodic()
 
 	// Manually tick shooter
 	if (m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->StartFlywheel();
-	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->Stop();
+	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->Stop();*/
 }
 
 /******************************************************************************
@@ -249,7 +270,9 @@ void CRobotMain::DisabledPeriodic()
 ******************************************************************************/
 void CRobotMain::TestInit()
 {
-	
+	m_pDrive->Init();
+	m_pDrive->SetJoystickControl(true);
+	m_pPrevVisionPacket = new CVisionPacket();
 }
 
 /******************************************************************************
@@ -259,13 +282,41 @@ void CRobotMain::TestInit()
 ******************************************************************************/
 void CRobotMain::TestPeriodic()
 {
-	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB)) m_pFrontIntake->ToggleIntake();
-	if (m_pFrontIntake->IsGoalPressed())
-	{
-		m_pFrontIntake->StopDeploy();
-		m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
+	/**************************************************************************
+	    Description:	Vision processing and ball trackings
+	**************************************************************************/
 
+	// Retrive the processed vision packet from our coprocessor.
+	string processed_vision = SmartDashboard::GetRaw("processed_vision", "");
+	// If the processed_vision is empty, then the vision code isn't running (?);
+	// Button A on drive controller must also have been pressed
+	if(!processed_vision.empty() /*&& m_pDriveController->GetRawButtonPressed(eButtonA)*/)
+	{
+		const char* pVisionPacketArr = string(processed_vision).c_str();
+		CVisionPacket* pVisionPacket = new CVisionPacket(pVisionPacketArr);
+
+		wpi::outs() << "Retrieved vision packet\n";
+
+		// First byte being equal to 0xFF means that the packet is a "null" packet (i.e no detections)
+		if(pVisionPacket->m_nRandVal != 0xFF)
+		{
+			wpi::outs() << "Not null packet\n";
+			// Check if we received a different packet from the last packet
+			if(pVisionPacket->m_nRandVal != m_pPrevVisionPacket->m_nRandVal)
+			{
+				wpi::outs() << "New vision packet\n";
+				DetectionClass kDetectClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eBlueCargo : eRedCargo);
+				if (pVisionPacket->m_uClass == kDetectClass) {
+					const double dTheta = (pVisionPacket->m_nX - 160) * dAnglePerPixel;
+					if (-pVisionPacket->m_dHalfWidthAngle < dTheta && dTheta < pVisionPacket->m_dHalfWidthAngle) m_pDrive->GoForwardUntuned();
+    				else m_pDrive->TurnByAngle(dTheta);
+   				}
+			}
+			m_pPrevVisionPacket = pVisionPacket;
+		}
+		else m_pDrive->Tick();
 	}
+	else m_pDrive->Tick();
 }
 
 #ifndef RUNNING_FRC_TESTS

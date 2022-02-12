@@ -18,7 +18,7 @@ CDrive::CDrive(Joystick* pDriveController)
 {
 	m_pDriveController		= pDriveController;
 	m_pTimer				= new Timer();
-	m_pLeadDriveMotor1		= new CFalconMotion(27); // meant to be 1, not 27
+	m_pLeadDriveMotor1		= new CFalconMotion(nLeadDriveMotor1); // meant to be 1, not 27
 	m_pFollowMotor1			= new WPI_TalonFX(nFollowDriveMotor1);
 	m_pLeadDriveMotor2		= new CFalconMotion(nLeadDriveMotor2);
 	m_pFollowMotor2			= new WPI_TalonFX(nFollowDriveMotor2);
@@ -234,4 +234,26 @@ DifferentialDriveWheelSpeeds CDrive::GetWheelSpeeds()
 bool CDrive::IsTrajectoryFinished()
 {
 	return m_pRamseteCommand->IsFinished();
+}
+
+/******************************************************************************
+    Description:	Sets both sides to 50% power NOTE: this is the untuned 
+					version, tuned version coming eventually, maybe
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CDrive::GoForwardUntuned()
+{
+	m_pLeadDriveMotor1->SetMotorVoltage(6.000);
+	m_pLeadDriveMotor2->SetMotorVoltage(6.000);
+}
+
+/******************************************************************************
+    Description:	Turns the robot in the direction of the angle
+	Arguments:		dTheta
+	Returns:		Nothing
+******************************************************************************/
+void CDrive::TurnByAngle(double dTheta)
+{
+	m_pRobotDrive->ArcadeDrive(0.000, dTheta / 100, false);
 }
