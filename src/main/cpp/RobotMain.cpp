@@ -290,7 +290,7 @@ void CRobotMain::TestPeriodic()
 	string processed_vision = SmartDashboard::GetRaw("processed_vision", "");
 	// If the processed_vision is empty, then the vision code isn't running (?);
 	// Button A on drive controller must also have been pressed
-	if(!processed_vision.empty() /*&& m_pDriveController->GetRawButtonPressed(eButtonA)*/)
+	if (!processed_vision.empty() /*&& m_pDriveController->GetRawButtonPressed(eButtonA)*/)
 	{
 		const char* pVisionPacketArr = string(processed_vision).c_str();
 		CVisionPacket* pVisionPacket = new CVisionPacket(pVisionPacketArr);
@@ -298,11 +298,11 @@ void CRobotMain::TestPeriodic()
 		wpi::outs() << "Retrieved vision packet\n";
 
 		// First byte being equal to 0xFF means that the packet is a "null" packet (i.e no detections)
-		if(pVisionPacket->m_nRandVal != 0xFF)
+		if (pVisionPacket->m_nRandVal != 0xFF)
 		{
 			wpi::outs() << "Not null packet\n";
 			// Check if we received a different packet from the last packet
-			if(pVisionPacket->m_nRandVal != m_pPrevVisionPacket->m_nRandVal)
+			if (pVisionPacket->m_nRandVal != m_pPrevVisionPacket->m_nRandVal)
 			{
 				wpi::outs() << "New vision packet\n";
 				DetectionClass kDetectClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eBlueCargo : eRedCargo);
@@ -312,9 +312,9 @@ void CRobotMain::TestPeriodic()
     				else m_pDrive->TurnByAngle(dTheta);
    				}
 			}
-			m_pPrevVisionPacket = pVisionPacket;
 		}
 		else m_pDrive->Tick();
+		m_pPrevVisionPacket = pVisionPacket;
 	}
 	else m_pDrive->Tick();
 }
