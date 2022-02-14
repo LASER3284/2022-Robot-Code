@@ -9,6 +9,9 @@
 #include <fmt/core.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
+#include <wpi/StringExtras.h>
+#include <iostream>
+
 ///////////////////////////////////////////////////////////////////////////////
 using namespace frc;
 using namespace std;
@@ -192,33 +195,7 @@ void CRobotMain::TeleopPeriodic()
 	    Description:	Vision processing and ball trackings
 	**************************************************************************/
 
-	// Retrive the processed vision packet from our coprocessor.
-	string processed_vision = SmartDashboard::GetRaw("processed_vision", "");
-	// If the processed_vision is empty, then the vision code isn't running (?);
-	// Button A on drive controller must also have been pressed
-	if(!processed_vision.empty() && m_pDriveController->GetRawButtonPressed(eButtonA))
-	{
-		const char* pVisionPacketArr = processed_vision.c_str();
-		CVisionPacket* pVisionPacket = new CVisionPacket(pVisionPacketArr);
-
-		// First byte being equal to 0xFF means that the packet is a "null" packet (i.e no detections)
-		if(pVisionPacket->m_nRandVal != 0xFF)
-		{
-			// Check if we received a different packet from the last packet
-			if(pVisionPacket->m_nRandVal != m_pPrevVisionPacket->m_nRandVal)
-			{
-				DetectionClass kDetectClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eBlueCargo : eRedCargo);
-				if (pVisionPacket->m_uClass == kDetectClass) {
-					const double dTheta = (pVisionPacket->m_nX - 160) * dAnglePerPixel;
-					if (-pVisionPacket->m_dHalfWidthAngle < dTheta && dTheta < pVisionPacket->m_dHalfWidthAngle) m_pDrive->GoForwardUntuned();
-    				else m_pDrive->TurnByAngle(dTheta);
-    				m_pPrevVisionPacket = pVisionPacket;
-   				}
-			}
-		}
-		else m_pDrive->Tick();
-	}
-	else m_pDrive->Tick();
+	// TODO: Implement vision into Teleop
 
 	/**************************************************************************
 	    Description:	Manual ticks
@@ -288,33 +265,46 @@ void CRobotMain::TestPeriodic()
 
 	// Retrive the processed vision packet from our coprocessor.
 	string processed_vision = SmartDashboard::GetRaw("processed_vision", "");
+		
 	// If the processed_vision is empty, then the vision code isn't running (?);
 	// Button A on drive controller must also have been pressed
 	if (!processed_vision.empty() /*&& m_pDriveController->GetRawButtonPressed(eButtonA)*/)
 	{
-		const char* pVisionPacketArr = string(processed_vision).c_str();
-		CVisionPacket* pVisionPacket = new CVisionPacket(pVisionPacketArr);
+		const char* pVisionPacketArr = processed_vision.c_str();
+		CVisionPacket* pVisionPacket = new CVisionPacket(pVisionPacketArr, processed_vision.length());
 
-		wpi::outs() << "Retrieved vision packet\n";
-
-		// First byte being equal to 0xFF means that the packet is a "null" packet (i.e no detections)
-		if (pVisionPacket->m_nRandVal != 0xFF)
-		{
-			wpi::outs() << "Not null packet\n";
-			// Check if we received a different packet from the last packet
-			if (pVisionPacket->m_nRandVal != m_pPrevVisionPacket->m_nRandVal)
-			{
-				wpi::outs() << "New vision packet\n";
+		if(pVisionPacket->m_nRandVal != 0xFF) {
+			if(m_pPrevVisionPacket->m_nRandVal != pVisionPacket->m_nRandVal) {
+				// Parse out the detections now that we know that it's a different packet 
+				pVisionPacket->ParseDetections();
 				DetectionClass kDetectClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eBlueCargo : eRedCargo);
-				if (pVisionPacket->m_uClass == kDetectClass) {
-					const double dTheta = (pVisionPacket->m_nX - 160) * dAnglePerPixel;
-					if (-pVisionPacket->m_dHalfWidthAngle < dTheta && dTheta < pVisionPacket->m_dHalfWidthAngle) m_pDrive->GoForwardUntuned();
-    				else m_pDrive->TurnByAngle(dTheta);
-   				}
-			}
+				
+				// ostringstream oss;
+				for(int i = 0; i < pVisionPacket->m_nDetectionCount; i++) {
+					CVisionPacket::sObjectDetection* pObjDetection = pVisionPacket->m_pDetections[i];
+					// oss << "[" << i << "] - Conf: " << std::hex << (int)pObjDetection->m_nConfidence;
+					// oss << " - Depth: " << std::hex << (int)pObjDetection->m_nDepth << " ";
+					if(pObjDetection->m_uClass == kDetectClass) {
+						const double dTheta = (pObjDetection->m_nX - 160) * dAnglePerPixel;
+						const double dHalfWidthAngle = (pObjDetection->m_nWidth / 2) * dAnglePerPixel;
+						// Go forward
+						if (-dHalfWidthAngle < dTheta && dTheta < dHalfWidthAngle) {
+							wpi::outs() << "Going forward...\r\n";
+							m_pDrive->GoForwardUntuned(); 
+						}
+						// Turn to center the detected object
+						else {
+							wpi::outs() << "Turning...\r\n";
+							m_pDrive->TurnByAngle(dTheta);
+						}
+					}
+				}
+				wpi::outs().flush();
+
+			} else m_pDrive->Tick();
+			m_pPrevVisionPacket = pVisionPacket;
 		}
 		else m_pDrive->Tick();
-		m_pPrevVisionPacket = pVisionPacket;
 	}
 	else m_pDrive->Tick();
 }
