@@ -37,8 +37,8 @@ public:
     void SetSafety(bool bSafety);
 private:
     // Declare class objects and variables.
-    CANSparkMax*      m_pFlywheelMotor1;
-    CANSparkMax*      m_pFlywheelMotor2;
+    WPI_TalonFX*      m_pFlywheelMotor1;
+    WPI_TalonFX*      m_pFlywheelMotor2;
 
     bool m_bSafety;
 };

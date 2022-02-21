@@ -1,6 +1,6 @@
 /******************************************************************************
-    Description:	Vision implementation
-	Class:			Vision
+    Description:	CVisionPacket implementation
+	Class:			CVisionPacket
 	Project:		2022 Rapid React Robot Code
 ******************************************************************************/
 
@@ -12,7 +12,8 @@
 using namespace frc;
 ///////////////////////////////////////////////////////////////////////////////
 
-CVisionPacket::CVisionPacket(const char* pPacketArr, unsigned int length) {
+CVisionPacket::CVisionPacket(const char* pPacketArr, unsigned int length)
+{
 	// Allocate the packet data
 	m_pRawPacket = (char*)malloc(length);
 	// Copy the packet (allocated on the stack) to a new array.
@@ -23,18 +24,21 @@ CVisionPacket::CVisionPacket(const char* pPacketArr, unsigned int length) {
 	m_nDetectionCount = m_pRawPacket[1];
 }
 
-CVisionPacket::CVisionPacket() {
+CVisionPacket::CVisionPacket()
+{
 	m_nRandVal = 0xFF;
 	m_nDetectionCount = 0xFF;
 	m_pDetections = nullptr;
 	m_pRawPacket = nullptr;
  }
 
-CVisionPacket::~CVisionPacket() {
+CVisionPacket::~CVisionPacket()
+{
 	free(m_pRawPacket);
 }
 
-void CVisionPacket::ParseDetections() {
+void CVisionPacket::ParseDetections()
+{
 	// Preallocate the array
 	m_pDetections = (sObjectDetection**)malloc(m_nDetectionCount * sizeof(sObjectDetection));
 	for(int i = 0; i < m_nDetectionCount; i++) {

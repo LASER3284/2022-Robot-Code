@@ -1,13 +1,13 @@
 /******************************************************************************
-	Description:	Defines the Vision control class
-	Classes:		VisionPacket 
+	Description:	Defines the CVisionPacket control class
+	Classes:		CVisionPacket 
 	Project:		2022 Rapid React Robot Code
 ******************************************************************************/
 
 #ifndef Vision_h
 #define Vison_h
 
-const double dAnglePerPixel     = 69.000 / 320.000;
+const double dAnglePerPixel = 69.000 / 320.000;
 enum DetectionClass : char {
     eBlueHangar = 0x01,
     eRedHangar,
