@@ -25,7 +25,7 @@ class CIntake
 {
 public:
 	// Public methods
-    CIntake(int nIntakeMotor1, int nIntakeMotor2, int nIntakeDownLimitSwitch, int nIntakeUpLimitSwitch, int nDeployController, bool IntakePosition);
+    CIntake(int nIntakeMotor1, int nIntakeDownLimitSwitch, int nIntakeUpLimitSwitch, int nDeployController, bool IntakePosition);
     ~CIntake();
 	void Init();
 	bool IsGoalPressed();
@@ -42,8 +42,8 @@ private:
 	DigitalInput*	m_pLimitSwitchDown;
 	DigitalInput*	m_pLimitSwitchUp;
 	CANSparkMax*	m_pIntakeMotor1;
-	CANSparkMax*	m_pIntakeMotor2;
-	WPI_TalonSRX*	m_pIntakeDeployMotorController;
+	WPI_TalonSRX*	m_pIntakeDeployMotorController1;
+	WPI_TalonSRX*	m_pIntakeDeployMotorController2;
 
 	bool m_bIntakeUp;
 	bool m_bIntakeDown;

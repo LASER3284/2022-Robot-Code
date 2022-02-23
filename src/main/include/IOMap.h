@@ -17,8 +17,8 @@ const int nSolenoid2                    =   1;      // Solenoid channel for sole
 
 // CAN Device IDs.
 const int nLeadDriveMotor1              =   1;      // Right Lead Drive Motor   (TALON FX controller)
-const int nLeadDriveMotor2              =   2;      // Left Lead Drive Motor    (TALON FX controller)
-const int nFollowDriveMotor1            =   3;      // Right Follow Motor       (TALON FX controller)
+const int nLeadDriveMotor2              =   3;      // Left Lead Drive Motor    (TALON FX controller)
+const int nFollowDriveMotor1            =   2;      // Right Follow Motor       (TALON FX controller)
 const int nFollowDriveMotor2            =   4;      // Left Follow Motor        (TALON FX controller)
 const int nFlywheelMotor1               =   5;      // Right flywheel motor     (TALON FX controller)
 const int nFlywheelMotor2               =   6;      // Left flywheel motor      (TALON FX controller)
@@ -26,13 +26,15 @@ const int nLiftMotor1                   =   7;      // Far left lift motor      
 const int nLiftMotor2                   =   8;      // Far right lift motor     (TALON FX controller)
 const int nPneumaticsHub                =   9;      // REV Pneumatics Hub       [MUST BE MANUALLY ASSIGNED]
 const int nIntakeMotor1                 =  10;      // Intake motor one         (SPARK MAX controller)
-const int nIntakeMotor3                 =  12;      // Intake motor three       (SPARK MAX controller)
-const int nTurretMotor                  =  14;      // Turret rotation motor    (SPARK MAX controller)
-const int nBeltMotor1                   =  15;      // Front belt motor         (SPARK MAX controller)
-const int nBeltMotor2                   =  16;      // Back belt motor          (SPARK MAX controller)
-const int nBeltMotor3                   =  17;      // Top belt motor           (SPARK MAX controller)
-const int nIntakeDeployMotor1           =  18;      // Intake Deploy motor one  (TALON SRX controller)
-const int nIntakeDeployMotor2           =  19;      // Intake Deploy motor two  (TALON SRX controller)
+const int nIntakeMotor2                 =  11;      // Intake motor three       (SPARK MAX controller)
+const int nTurretMotor                  =  12;      // Turret rotation motor    (SPARK MAX controller)
+const int nBeltMotor1                   =  13;      // Front belt motor         (SPARK MAX controller)
+const int nBeltMotor2                   =  14;      // Back belt motor          (SPARK MAX controller)
+const int nBeltMotor3                   =  15;      // Top belt motor           (SPARK MAX controller)
+const int nIntakeDeployMotor1           =  16;      // Intake Deploy motor one  (TALON SRX controller)
+const int nIntakeDeployMotor2           =  17;      // Intake Deploy motor two  (TALON SRX controller)
+const int nIntakeDeployMotor3           =  18;
+const int nIntakeDeployMotor4           =  19;      
 
 // PWM Channels.
 const int nBlinkinID					=	1;		// PWM channel for Blinkin LED driver

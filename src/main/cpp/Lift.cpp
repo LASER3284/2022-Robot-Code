@@ -16,8 +16,8 @@ CLift::CLift()
 {
 	m_pLiftMotor1 		= new WPI_TalonFX(nLiftMotor1);
 	m_pLiftMotor2 		= new WPI_TalonFX(nLiftMotor2);
-	m_pLeftSolenoid		= new Solenoid(nPCM1, PneumaticsModuleType::CTREPCM, nSolenoid1);
-	m_pRightSolenoid	= new Solenoid(nPCM2, PneumaticsModuleType::CTREPCM, nSolenoid1);
+	m_pLeftSolenoid		= new Solenoid(nPneumaticsHub, PneumaticsModuleType::CTREPCM, nSolenoid1);
+	m_pRightSolenoid	= new Solenoid(nPneumaticsHub, PneumaticsModuleType::CTREPCM, nSolenoid1);
 }
 
 /******************************************************************************

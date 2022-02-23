@@ -23,8 +23,7 @@ CDrive::CDrive(Joystick* pDriveController)
 	m_pLeadDriveMotor2		= new CFalconMotion(nLeadDriveMotor2);
 	m_pFollowMotor2			= new WPI_TalonFX(nFollowDriveMotor2);
 	m_pRobotDrive			= new DifferentialDrive(*m_pLeadDriveMotor1->GetMotorPointer(), *m_pLeadDriveMotor2->GetMotorPointer());
-	m_pGyro					= new AHRS(SPI::Port::kMXP);
-
+	m_pGyro					= new AHRS(SerialPort::Port::kMXP);
 	m_bJoystickControl = false;
 }
 
@@ -72,13 +71,14 @@ void CDrive::Init()
 
 	// Set follow motors to followers of Drive Motor 1 and 2 respectively
 	m_pFollowMotor1->Follow(*m_pLeadDriveMotor1->GetMotorPointer());
+	m_pLeadDriveMotor1->SetMotorInverted(true);
+	m_pFollowMotor1->SetInverted(true);
 	m_pFollowMotor2->Follow(*m_pLeadDriveMotor2->GetMotorPointer());
 
 	// Reset encoders and odometry
 	ResetOdometry();
 
 	m_pTimer->Start();
-	// Reset encoders and odometry>
 }
 
 /******************************************************************************
@@ -91,8 +91,9 @@ void CDrive::Tick()
 	if (m_bJoystickControl)
 	{
 		// Set variables to joystick values.
+		// NOTE: JOYSTICK ASSIGNMENTS WRONG, INVERSION NEEDS TO BE IMPLEMENTED
 		double dXAxis = m_pDriveController->GetRawAxis(eRightAxisX);
-		double dYAxis = -m_pDriveController->GetRawAxis(eLeftAxisY);
+		double dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY);
 
 		// Check if joystick is in deadzone.
 		if (fabs(dXAxis) < dJoystickDeadzone)
@@ -105,7 +106,7 @@ void CDrive::Tick()
 		}
 
 		// Set drivetrain powers to joystick controls.
-		m_pRobotDrive->ArcadeDrive(dYAxis, dXAxis, false);
+		m_pRobotDrive->ArcadeDrive(-dYAxis, dXAxis, false);
 	}
 
 	// Update Smartdashboard values.

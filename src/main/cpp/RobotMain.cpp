@@ -29,7 +29,7 @@ CRobotMain::CRobotMain()
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
 	//m_pLift 					= new CLift();
-	//m_pFrontIntake				= new CIntake(4, 9, 8, 0, 5, false);
+	m_pFrontIntake				= new CIntake(11, 2, 3, 17, false);
 	//m_pShooter					= new CShooter();
 	m_nAutoState				= eAutoStopped;
 	m_dStartTime				= 0.0;
@@ -164,7 +164,7 @@ void CRobotMain::TeleopInit()
 {
 	m_pDrive->Init();
 	m_pDrive->SetJoystickControl(true);
-	//m_pFrontIntake->Init();
+	m_pFrontIntake->Init();
 	//m_pShooter->SetSafety(false);
 	//m_pShooter->Init();
 	m_pPrevVisionPacket = new CVisionPacket();
@@ -190,6 +190,7 @@ void CRobotMain::TeleopPeriodic()
 	{
 		m_pDrive->SetJoystickControl(true);
 	}
+	m_pDrive->Tick();
 
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings
@@ -200,20 +201,24 @@ void CRobotMain::TeleopPeriodic()
 	/**************************************************************************
 	    Description:	Manual ticks
 	**************************************************************************/
-/*
+
 	// Manually tick intake
 	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB))
 	{
+		// Stop the intake just to be safe (:
+		m_pFrontIntake->StopIntake();
 		m_pFrontIntake->ToggleIntake();
 	}
 	if (m_pFrontIntake->IsGoalPressed())
 	{
 		if (!m_pFrontIntake->m_bGoal) m_pFrontIntake->StartIntake();
 		else m_pFrontIntake->StopIntake();
+		
 		m_pFrontIntake->StopDeploy();
 		m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
 	}
-
+	// Switch the goal
+/*
 	// Manually tick shooter
 	if (m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->StartFlywheel();
 	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->Stop();*/
