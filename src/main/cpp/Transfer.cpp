@@ -17,9 +17,13 @@
 ******************************************************************************/
 CTransfer::CTransfer()
 {
-	m_pTopBeltMotor		= new CANSparkMax(nBeltMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
-	m_pFrontBeltMotor	= new CANSparkMax(nBeltMotor2, CANSparkMaxLowLevel::MotorType::kBrushless);
-	m_pBackBeltMotor	= new CANSparkMax(nBeltMotor3, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pTopMotor			= new CANSparkMax(nTransferVertical, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pFrontMotor		= new CANSparkMax(nTransferFront, CANSparkMaxLowLevel::MotorType::kBrushless);
+	m_pBackMotor		= new CANSparkMax(nTransferBack, CANSparkMaxLowLevel::MotorType::kBrushless);
+
+	m_pTopInfrared		= new DigitalInput(nTopTransferInfrared);
+	m_pFrontInfrared	= new DigitalInput(nFrontTransferInfrared);
+	m_pBackInfrared		= new DigitalInput(nBackTransferInfrared);
 }
 
 /******************************************************************************
@@ -29,13 +33,19 @@ CTransfer::CTransfer()
 ******************************************************************************/
 CTransfer::~CTransfer()
 {
-	delete m_pTopBeltMotor;
-	delete m_pFrontBeltMotor;
-	delete m_pBackBeltMotor;
+	delete m_pTopMotor;
+	delete m_pFrontMotor;
+	delete m_pBackMotor;
+	delete m_pTopInfrared;
+	delete m_pFrontInfrared;
+	delete m_pBackInfrared;
 	
-	m_pTopBeltMotor		= nullptr;
-	m_pFrontBeltMotor	= nullptr;
-	m_pBackBeltMotor	= nullptr;
+	m_pTopMotor			= nullptr;
+	m_pFrontMotor		= nullptr;
+	m_pBackMotor		= nullptr;
+	m_pTopInfrared		= nullptr;
+	m_pFrontInfrared	= nullptr;
+	m_pBackInfrared		= nullptr;
 }
 
 /******************************************************************************
@@ -45,6 +55,81 @@ CTransfer::~CTransfer()
 ******************************************************************************/
 void CTransfer::Init()
 {
-	
+	m_pTopMotor->SetOpenLoopRampRate(0.500);
+	m_pFrontMotor->SetOpenLoopRampRate(0.500);
+	m_pBackMotor->SetOpenLoopRampRate(0.500);
+
+	UpdateLocations();
 }
 
+/******************************************************************************
+	Description:	Start vertical motor
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CTransfer::StartVertical()
+{
+	m_pTopMotor->Set(0.100);
+}
+
+/******************************************************************************
+	Description:	Start vertical motor
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CTransfer::StartFront()
+{
+	m_pFrontMotor->Set(0.100);
+}
+
+/******************************************************************************
+	Description:	Start vertical motor
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CTransfer::StartBack()
+{
+	m_pBackMotor->Set(0.100);
+}
+
+/******************************************************************************
+	Description:	Start vertical motor
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CTransfer::StopVertical()
+{
+	m_pTopMotor->Set(0.000);
+}
+
+/******************************************************************************
+	Description:	Start vertical motor
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CTransfer::StopFront()
+{
+	m_pFrontMotor->Set(0.000);
+}
+
+/******************************************************************************
+	Description:	Start vertical motor
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CTransfer::StopBack()
+{
+	m_pBackMotor->Set(0.000);
+}
+
+/******************************************************************************
+	Description:	Update locations of balls in the robot
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CTransfer::UpdateLocations()
+{
+	m_aBallLocations[0] = m_pTopInfrared->Get();
+	m_aBallLocations[1] = m_pFrontInfrared->Get();
+	m_aBallLocations[2] = m_pBackInfrared->Get();
+}

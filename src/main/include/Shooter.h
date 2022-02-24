@@ -35,6 +35,9 @@ public:
     void StartFlywheel();
 	void Stop();
     void SetSafety(bool bSafety);
+
+    bool m_bShooterOn;
+
 private:
     // Declare class objects and variables.
     WPI_TalonFX*      m_pFlywheelMotor1;

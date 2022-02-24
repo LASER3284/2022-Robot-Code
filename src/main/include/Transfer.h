@@ -11,7 +11,9 @@
 #include "IOMap.h"
 
 #include <rev/CANSparkMax.h>
+#include <frc/DigitalInput.h>
 
+using namespace frc;
 using namespace rev;
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -27,12 +29,26 @@ public:
 	CTransfer();
 	~CTransfer();
 	void Init();
+	void StartVertical();
+	void StartFront();
+	void StartBack();
+	void StopVertical();
+	void StopFront();
+	void StopBack();
+	void UpdateLocations();
+
+	// Arranged Vertical, Front, Back
+	bool m_aBallLocations[3] = {false, false, false};
 
 private:
 	// Declare class objects and variables.
-	CANSparkMax*          m_pTopBeltMotor;
-	CANSparkMax*          m_pFrontBeltMotor;
-	CANSparkMax*          m_pBackBeltMotor;
+	DigitalInput*		m_pTopInfrared;
+	DigitalInput*		m_pFrontInfrared;
+	DigitalInput*		m_pBackInfrared;
+
+	CANSparkMax*		m_pTopMotor;
+	CANSparkMax*		m_pFrontMotor;
+	CANSparkMax*		m_pBackMotor;
 };
 
 //////////////////////////////////////////////////////////////////////////////

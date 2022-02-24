@@ -12,6 +12,7 @@
 #include "Vision.h"
 #include "Shooter.h"
 #include "Lift.h"
+#include "Transfer.h"
 
 #include <string>
 #include <frc/TimedRobot.h>
@@ -64,6 +65,7 @@ private:
 	CShooter*							m_pShooter;
 	CLift*								m_pLift;
 	CVisionPacket*						m_pPrevVisionPacket;
+	CTransfer*							m_pTransfer;
 
 	double	m_dStartTime;							// A double representing start time
 	int		m_nAutoState;							// Current Auto state

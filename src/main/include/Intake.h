@@ -36,6 +36,7 @@ public:
 
 	// Public members
 	bool m_bGoal;		// If true, up; else, down
+	bool m_bIntakeOn;
 
 private:
 	// Private members

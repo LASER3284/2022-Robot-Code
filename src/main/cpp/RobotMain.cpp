@@ -35,6 +35,7 @@ CRobotMain::CRobotMain()
 	m_dStartTime				= 0.0;
 	//m_nPreviousState			= eTeleopStopped;
 	m_pPrevVisionPacket         = new CVisionPacket();
+	m_pTransfer					= new CTransfer();
 }
 
 /******************************************************************************
@@ -51,6 +52,7 @@ CRobotMain::~CRobotMain()
 	delete m_pAutoChooser;
 	delete m_pFrontIntake;
 	delete m_pPrevVisionPacket;
+	delete m_pTransfer;
 
 	m_pDriveController	= nullptr;
 	m_pAuxController	= nullptr;
@@ -59,6 +61,7 @@ CRobotMain::~CRobotMain()
 	m_pAutoChooser		= nullptr;
 	m_pFrontIntake		= nullptr;
 	m_pPrevVisionPacket = nullptr;
+	m_pTransfer			= nullptr;
 }
 
 /******************************************************************************
@@ -69,6 +72,7 @@ CRobotMain::~CRobotMain()
 void CRobotMain::RobotInit()
 {
 	m_pDrive->Init();
+	m_pTransfer->Init();
 
 	// Setup autonomous chooser.
 	m_pAutoChooser->SetDefaultOption("Autonomous Idle", "Autonomous Idle");
@@ -168,6 +172,7 @@ void CRobotMain::TeleopInit()
 	//m_pShooter->SetSafety(false);
 	//m_pShooter->Init();
 	m_pPrevVisionPacket = new CVisionPacket();
+	m_pTransfer->Init();
 }
 
 /******************************************************************************
@@ -193,12 +198,6 @@ void CRobotMain::TeleopPeriodic()
 	m_pDrive->Tick();
 
 	/**************************************************************************
-	    Description:	Vision processing and ball trackings
-	**************************************************************************/
-
-	// TODO: Implement vision into Teleop
-
-	/**************************************************************************
 	    Description:	Manual ticks
 	**************************************************************************/
 
@@ -217,11 +216,26 @@ void CRobotMain::TeleopPeriodic()
 		m_pFrontIntake->StopDeploy();
 		m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
 	}
-	// Switch the goal
-/*
+	
+	// Manually tick transfer system
+	m_pTransfer->UpdateLocations();
+	if ((m_pFrontIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) || (!m_pTransfer->m_aBallLocations[0] && m_pTransfer->m_aBallLocations[1])) m_pTransfer->StartFront();
+	else m_pTransfer->StopFront();
+	if ((m_pFrontIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) || (!m_pTransfer->m_aBallLocations[0] && m_pTransfer->m_aBallLocations[2])) m_pTransfer->StartBack();
+	else m_pTransfer->StopBack();
+	if (m_pShooter->m_bShooterOn && m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartVertical();
+	else m_pTransfer->StopVertical();
+
+
 	// Manually tick shooter
 	if (m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->StartFlywheel();
-	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->Stop();*/
+	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->Stop();
+
+	/**************************************************************************
+	    Description:	Vision processing and ball trackings
+	**************************************************************************/
+
+	// TODO: Implement vision into Teleop
 }
 
 /******************************************************************************

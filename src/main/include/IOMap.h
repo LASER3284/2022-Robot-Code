@@ -27,10 +27,9 @@ const int nLiftMotor2                   =   8;      // Far right lift motor     
 const int nPneumaticsHub                =   9;      // REV Pneumatics Hub       [MUST BE MANUALLY ASSIGNED]
 const int nIntakeMotor1                 =  10;      // Intake motor one         (SPARK MAX controller)
 const int nIntakeMotor2                 =  11;      // Intake motor three       (SPARK MAX controller)
-const int nTurretMotor                  =  12;      // Turret rotation motor    (SPARK MAX controller)
-const int nBeltMotor1                   =  13;      // Front belt motor         (SPARK MAX controller)
-const int nBeltMotor2                   =  14;      // Back belt motor          (SPARK MAX controller)
-const int nBeltMotor3                   =  15;      // Top belt motor           (SPARK MAX controller)
+const int nTransferFront                =  13;      // Front belt motor         (SPARK MAX controller)
+const int nTransferBack                 =  14;      // Back belt motor          (SPARK MAX controller)
+const int nTransferVertical             =  15;      // Top belt motor           (SPARK MAX controller)
 const int nIntakeDeployMotor1           =  16;      // Intake Deploy motor one  (TALON SRX controller)
 const int nIntakeDeployMotor2           =  17;      // Intake Deploy motor two  (TALON SRX controller)
 const int nIntakeDeployMotor3           =  18;
@@ -48,6 +47,9 @@ const int nFrontIntakeDownLS            =   0;
 const int nFrontIntakeUpLS              =   1;
 const int nBackIntakeDownLS             =   2;
 const int nBackIntakeUpLS               =   3;
+const int nTopTransferInfrared          =   4;
+const int nFrontTransferInfrared        =   5;
+const int nBackTransferInfrared         =   6;
 
 // Xbox Controller Button Assignments.
 enum XboxButtons 		{eButtonA = 1, eButtonB, eButtonX, eButtonY, eButtonLB, eButtonRB, eBack, eStart, eButtonLS, eButtonRS};

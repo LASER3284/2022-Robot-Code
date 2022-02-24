@@ -44,6 +44,7 @@ CShooter::~CShooter()
 void CShooter::Stop()
 {
 	m_pFlywheelMotor1->Set(0.000);
+	m_bShooterOn = false;
 }
 
 /******************************************************************************
@@ -63,7 +64,11 @@ void CShooter::SetSafety(bool bSafety)
 ******************************************************************************/
 void CShooter::Init()
 {
+	m_pFlywheelMotor1->ConfigOpenloopRamp(7.000);
+	m_pFlywheelMotor2->ConfigOpenloopRamp(7.000);
 	m_pFlywheelMotor2->Follow(*m_pFlywheelMotor1);
+	m_pFlywheelMotor2->SetInverted(true);
+	m_bShooterOn = false;
 }
 
 /******************************************************************************
@@ -73,6 +78,10 @@ void CShooter::Init()
 ******************************************************************************/
 void CShooter::StartFlywheel()
 {
-	if (!m_bSafety) m_pFlywheelMotor1->Set(dFlywheelMotorSpeed);
+	if (!m_bSafety) 
+	{
+		m_pFlywheelMotor1->Set(dFlywheelMotorSpeed);
+		m_bShooterOn = true;
+	}
 	else Stop();
 }
