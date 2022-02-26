@@ -55,7 +55,7 @@ CTransfer::~CTransfer()
 ******************************************************************************/
 void CTransfer::Init()
 {
-	m_pTopMotor->SetOpenLoopRampRate(1.000);
+	m_pTopMotor->SetOpenLoopRampRate(0.250);
 	m_pFrontMotor->SetOpenLoopRampRate(0.500);
 	m_pBackMotor->SetOpenLoopRampRate(0.500);
 
@@ -79,7 +79,7 @@ void CTransfer::StartVertical()
 ******************************************************************************/
 void CTransfer::StartFront()
 {
-	m_pFrontMotor->Set(0.250);
+	// m_pFrontMotor->Set(0.250);
 }
 
 /******************************************************************************
@@ -109,7 +109,7 @@ void CTransfer::StopVertical()
 ******************************************************************************/
 void CTransfer::StopFront()
 {
-	m_pFrontMotor->Set(0.000);
+	// m_pFrontMotor->Set(0.000);
 }
 
 /******************************************************************************

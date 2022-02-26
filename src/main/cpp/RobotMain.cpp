@@ -243,14 +243,15 @@ void CRobotMain::TeleopPeriodic()
 	if (m_pFrontIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) {
 		m_pTransfer->StartFront();
 		m_pTransfer->StartBack();
-		m_pTransfer->m_nTransferStartTime = m_pTimer->Get();
+		m_pTransfer->m_nTransferStartTime = (double)m_pTimer->Get();
 	}
 	else {
-		if(m_pTransfer->m_nTransferStartTime - m_pTimer->Get() >= units::time::second_t(0.5) )  {
-			m_pTransfer->StopFront();
-			m_pTransfer->StopBack();
-		}
+		m_pTransfer->StopFront();
+		m_pTransfer->StopBack();
 	}
+
+	m_pTransfer->StartVertical();
+
 	// If we don't have a ball in the vertical transfer, start it
 	if (!m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartVertical();
 	else m_pTransfer->StopVertical();
@@ -267,7 +268,7 @@ void CRobotMain::TeleopPeriodic()
 	// If the shooter is on, and we have a ball in the vertical transfer;
 	// Then we should start the vertical transfer (with a ball in it) to feed it to the flywheel.
 	if (m_pShooter->m_bShooterOn && m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartVertical();
-	else m_pTransfer->StopVertical();
+	else if(m_pShooter->m_bShooterOn) m_pTransfer->StopVertical();
 
 
 	// Manually tick shooter
