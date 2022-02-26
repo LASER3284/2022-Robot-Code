@@ -242,11 +242,14 @@ void CRobotMain::TeleopPeriodic()
 	// If the front intake is on, and we don't have a ball in the vertical, start the front intake
 	if (m_pFrontIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) {
 		m_pTransfer->StartFront();
-		// m_pTransfer->StartBack();
+		m_pTransfer->StartBack();
+		m_pTransfer->m_nTransferStartTime = m_pTimer->Get();
 	}
 	else {
-		m_pTransfer->StopFront();
-		// m_pTransfer->StopBack();
+		if(m_pTransfer->m_nTransferStartTime - m_pTimer->Get() >= units::time::second_t(0.5) )  {
+			m_pTransfer->StopFront();
+			m_pTransfer->StopBack();
+		}
 	}
 	// If we don't have a ball in the vertical transfer, start it
 	if (!m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartVertical();
@@ -254,12 +257,13 @@ void CRobotMain::TeleopPeriodic()
 	
 	if ((m_pBackIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) || (!m_pTransfer->m_aBallLocations[0] && m_pTransfer->m_aBallLocations[2])) {
 		m_pTransfer->StartBack();
-		// m_pTransfer->StartFront();
+		m_pTransfer->StartFront();
 	}
 	else {
 		m_pTransfer->StopBack();
-		// m_pTransfer->StopFront();
+		m_pTransfer->StopFront();
 	}
+
 	// If the shooter is on, and we have a ball in the vertical transfer;
 	// Then we should start the vertical transfer (with a ball in it) to feed it to the flywheel.
 	if (m_pShooter->m_bShooterOn && m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartVertical();
@@ -341,7 +345,7 @@ void CRobotMain::TestPeriodic()
 				for(int i = 0; i < pVisionPacket->m_nDetectionCount; i++) {
 					CVisionPacket::sObjectDetection* pObjDetection = pVisionPacket->m_pDetections[i];
 					// oss << "[" << i << "] - Conf: " << std::hex << (int)pObjDetection->m_nConfidence;
-					// oss << " - Depth: " << std::hex << (int)pObjDetection->m_nDepth << " ";
+					// oss << " - Depth: " << std::hex << (int)pObjDetection->m_nDepth << " ";	5
 					if(pObjDetection->m_kClass == kDetectClass) {
 						const double dTheta = (pObjDetection->m_nX - 160) * dAnglePerPixel;
 						const double dHalfWidthAngle = (pObjDetection->m_nWidth / 2) * dAnglePerPixel;

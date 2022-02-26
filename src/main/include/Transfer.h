@@ -15,6 +15,7 @@
 
 using namespace frc;
 using namespace rev;
+using namespace units;
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -38,7 +39,8 @@ public:
 	void UpdateLocations();
 
 	// Arranged Vertical, Front, Back
-	bool m_aBallLocations[3] = {false, false, false};
+	bool m_aBallLocations[3] = { false, false, false };
+	time::second_t  m_nTransferStartTime = time::second_t(0);
 
 private:
 	// Declare class objects and variables.
