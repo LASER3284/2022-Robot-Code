@@ -62,6 +62,7 @@ private:
 	CDrive*								m_pDrive;
 	Timer*								m_pTimer;
 	CIntake*							m_pFrontIntake;
+	CIntake*							m_pBackIntake;
 	CShooter*							m_pShooter;
 	CLift*								m_pLift;
 	CVisionPacket*						m_pPrevVisionPacket;

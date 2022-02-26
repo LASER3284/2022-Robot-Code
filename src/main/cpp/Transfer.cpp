@@ -55,7 +55,7 @@ CTransfer::~CTransfer()
 ******************************************************************************/
 void CTransfer::Init()
 {
-	m_pTopMotor->SetOpenLoopRampRate(0.500);
+	m_pTopMotor->SetOpenLoopRampRate(1.000);
 	m_pFrontMotor->SetOpenLoopRampRate(0.500);
 	m_pBackMotor->SetOpenLoopRampRate(0.500);
 
@@ -63,37 +63,37 @@ void CTransfer::Init()
 }
 
 /******************************************************************************
-	Description:	Start vertical motor
+	Description:	Start vertical transfer motor
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
 void CTransfer::StartVertical()
 {
-	m_pTopMotor->Set(0.100);
+	m_pTopMotor->Set(-0.650);
 }
 
 /******************************************************************************
-	Description:	Start vertical motor
+	Description:	Start front transfer motor
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
 void CTransfer::StartFront()
 {
-	m_pFrontMotor->Set(0.100);
+	m_pFrontMotor->Set(0.250);
 }
 
 /******************************************************************************
-	Description:	Start vertical motor
+	Description:	Start back transfer motor
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
 void CTransfer::StartBack()
 {
-	m_pBackMotor->Set(0.100);
+	m_pBackMotor->Set(0.650);
 }
 
 /******************************************************************************
-	Description:	Start vertical motor
+	Description:	Stop vertical motor
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
@@ -103,7 +103,7 @@ void CTransfer::StopVertical()
 }
 
 /******************************************************************************
-	Description:	Start vertical motor
+	Description:	Stop front transfer motor
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
@@ -113,7 +113,7 @@ void CTransfer::StopFront()
 }
 
 /******************************************************************************
-	Description:	Start vertical motor
+	Description:	Stop back transfer motor
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/

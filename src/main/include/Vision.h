@@ -8,12 +8,18 @@
 #define Vison_h
 
 const double dAnglePerPixel = 69.000 / 320.000;
-enum DetectionClass : char {
+enum DetectionClass : unsigned char {
     eBlueHangar = 0x01,
     eRedHangar,
     eHub,
     eRedCargo,
     eBlueCargo
+};
+
+enum DetectionLocation : unsigned char {
+    eFrontCamera = 0x00,
+    eBackCamera  = 0x01,
+    eNONE  = 0xFF
 };
 
 class CVisionPacket {
@@ -25,8 +31,9 @@ public:
     
     char m_nRandVal = 0xFF;
     char m_nDetectionCount = 0xFF;
-    
-    // Force the compiler to pack tightly in order to properly serialize this out
+    DetectionLocation m_kDetectionLocation = DetectionLocation::eNONE;
+
+    // Force the compiler to pack tightly in order to properly deserialize this
     #pragma pack(1)
     struct sObjectDetection {
         public:
@@ -37,7 +44,7 @@ public:
         short           m_nHeight;
 
         char            m_nConfidence;
-        DetectionClass  m_uClass;
+        DetectionClass  m_kClass;
         int             m_nDepth;
 
         sObjectDetection(const char* arr, int offset = 0) {
@@ -46,7 +53,7 @@ public:
 			m_nWidth = (short) (arr[offset + 4] << 8 | arr[offset + 5]);
 			m_nHeight = (short) (arr[offset + 6] << 8 | arr[offset + 7]);
 			m_nConfidence = (arr[offset + 8]);
-			m_uClass = (DetectionClass)(arr[offset + 9]);
+			m_kClass = (DetectionClass)(arr[offset + 9]);
             
             // Convert the big endian data in the byte array into the int
             m_nDepth = 0;

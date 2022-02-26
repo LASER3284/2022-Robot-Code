@@ -19,6 +19,9 @@ CIntake::CIntake(int nIntakeMotor1, int nIntakeDownLimitSwitch, int nIntakeUpLim
 	m_pIntakeDeployMotorController2	= new WPI_TalonSRX(nDeployController + 2);
 	m_pLimitSwitchDown				= new DigitalInput(nIntakeDownLimitSwitch);
 	m_pLimitSwitchUp				= new DigitalInput(nIntakeUpLimitSwitch);
+	m_pIntakeDeployMotorController1->SetInverted(bIntakePosition);
+	m_pIntakeDeployMotorController2->SetInverted(!bIntakePosition);
+	m_pIntakeMotor1->SetInverted(bIntakePosition);
 }
 
 /******************************************************************************
@@ -50,7 +53,8 @@ void CIntake::Init()
 	m_bIntakeDown	= m_pLimitSwitchDown->Get();
 
 	// Set right motor to follow the left
-	m_pIntakeDeployMotorController2->SetInverted(true);
+	m_pIntakeDeployMotorController1->ConfigOpenloopRamp(0.500);
+	m_pIntakeDeployMotorController2->ConfigOpenloopRamp(0.500);
 	m_pIntakeDeployMotorController2->Follow(*m_pIntakeDeployMotorController1);
 
 	// Set open loop ramp rate for NEO 550

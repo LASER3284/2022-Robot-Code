@@ -29,8 +29,9 @@ CRobotMain::CRobotMain()
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<string>();
 	//m_pLift 					= new CLift();
-	m_pFrontIntake				= new CIntake(11, 2, 3, 17, false);
-	//m_pShooter					= new CShooter();
+	m_pFrontIntake				= new CIntake(nIntakeMotor1, 0, 1, nIntakeDeployMotor1, true);
+	m_pBackIntake				= new CIntake(nIntakeMotor2, 2, 3, nIntakeDeployMotor2, false);
+	m_pShooter					= new CShooter();
 	m_nAutoState				= eAutoStopped;
 	m_dStartTime				= 0.0;
 	//m_nPreviousState			= eTeleopStopped;
@@ -51,6 +52,7 @@ CRobotMain::~CRobotMain()
 	delete m_pTimer;
 	delete m_pAutoChooser;
 	delete m_pFrontIntake;
+	delete m_pBackIntake;
 	delete m_pPrevVisionPacket;
 	delete m_pTransfer;
 
@@ -60,6 +62,7 @@ CRobotMain::~CRobotMain()
 	m_pTimer			= nullptr;
 	m_pAutoChooser		= nullptr;
 	m_pFrontIntake		= nullptr;
+	m_pBackIntake		= nullptr;
 	m_pPrevVisionPacket = nullptr;
 	m_pTransfer			= nullptr;
 }
@@ -169,8 +172,9 @@ void CRobotMain::TeleopInit()
 	m_pDrive->Init();
 	m_pDrive->SetJoystickControl(true);
 	m_pFrontIntake->Init();
-	//m_pShooter->SetSafety(false);
-	//m_pShooter->Init();
+	m_pBackIntake->Init();
+	m_pShooter->SetSafety(false);
+	m_pShooter->Init();
 	m_pPrevVisionPacket = new CVisionPacket();
 	m_pTransfer->Init();
 }
@@ -202,7 +206,7 @@ void CRobotMain::TeleopPeriodic()
 	**************************************************************************/
 
 	// Manually tick intake
-	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB))
+	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonLB))
 	{
 		// Stop the intake just to be safe (:
 		m_pFrontIntake->StopIntake();
@@ -216,13 +220,48 @@ void CRobotMain::TeleopPeriodic()
 		m_pFrontIntake->StopDeploy();
 		m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
 	}
+
+	if (!m_pBackIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB))
+	{
+		// Stop the intake just to be safe (:
+		m_pBackIntake->StopIntake();
+		m_pBackIntake->ToggleIntake();
+	}
+	if (m_pBackIntake->IsGoalPressed())
+	{
+		if (!m_pBackIntake->m_bGoal) m_pBackIntake->StartIntake();
+		else m_pBackIntake->StopIntake();
+		
+		m_pBackIntake->StopDeploy();
+		m_pBackIntake->m_bGoal = !m_pBackIntake->m_bGoal;
+	}
 	
 	// Manually tick transfer system
 	m_pTransfer->UpdateLocations();
-	if ((m_pFrontIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) || (!m_pTransfer->m_aBallLocations[0] && m_pTransfer->m_aBallLocations[1])) m_pTransfer->StartFront();
-	else m_pTransfer->StopFront();
-	if ((m_pFrontIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) || (!m_pTransfer->m_aBallLocations[0] && m_pTransfer->m_aBallLocations[2])) m_pTransfer->StartBack();
-	else m_pTransfer->StopBack();
+
+	// If the front intake is on, and we don't have a ball in the vertical, start the front intake
+	if (m_pFrontIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) {
+		m_pTransfer->StartFront();
+		// m_pTransfer->StartBack();
+	}
+	else {
+		m_pTransfer->StopFront();
+		// m_pTransfer->StopBack();
+	}
+	// If we don't have a ball in the vertical transfer, start it
+	if (!m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartVertical();
+	else m_pTransfer->StopVertical();
+	
+	if ((m_pBackIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) || (!m_pTransfer->m_aBallLocations[0] && m_pTransfer->m_aBallLocations[2])) {
+		m_pTransfer->StartBack();
+		// m_pTransfer->StartFront();
+	}
+	else {
+		m_pTransfer->StopBack();
+		// m_pTransfer->StopFront();
+	}
+	// If the shooter is on, and we have a ball in the vertical transfer;
+	// Then we should start the vertical transfer (with a ball in it) to feed it to the flywheel.
 	if (m_pShooter->m_bShooterOn && m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartVertical();
 	else m_pTransfer->StopVertical();
 
@@ -303,7 +342,7 @@ void CRobotMain::TestPeriodic()
 					CVisionPacket::sObjectDetection* pObjDetection = pVisionPacket->m_pDetections[i];
 					// oss << "[" << i << "] - Conf: " << std::hex << (int)pObjDetection->m_nConfidence;
 					// oss << " - Depth: " << std::hex << (int)pObjDetection->m_nDepth << " ";
-					if(pObjDetection->m_uClass == kDetectClass) {
+					if(pObjDetection->m_kClass == kDetectClass) {
 						const double dTheta = (pObjDetection->m_nX - 160) * dAnglePerPixel;
 						const double dHalfWidthAngle = (pObjDetection->m_nWidth / 2) * dAnglePerPixel;
 						// Go forward

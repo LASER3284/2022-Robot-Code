@@ -28,6 +28,7 @@ CVisionPacket::CVisionPacket()
 {
 	m_nRandVal = 0xFF;
 	m_nDetectionCount = 0xFF;
+	m_kDetectionLocation = DetectionLocation::eNONE;
 	m_pDetections = nullptr;
 	m_pRawPacket = nullptr;
  }
@@ -39,11 +40,12 @@ CVisionPacket::~CVisionPacket()
 
 void CVisionPacket::ParseDetections()
 {
+	m_kDetectionLocation = (DetectionLocation)m_pRawPacket[0];
 	// Preallocate the array
 	m_pDetections = (sObjectDetection**)malloc(m_nDetectionCount * sizeof(sObjectDetection));
 	for(int i = 0; i < m_nDetectionCount; i++) {
 		// Get the offset that we are into the packet.
-		int packetOffset = 2 + (i * sizeof(sObjectDetection));
+		int packetOffset = 3 + (i * sizeof(sObjectDetection));
 		m_pDetections[i] = new sObjectDetection(m_pRawPacket, packetOffset);
 	}
 }
