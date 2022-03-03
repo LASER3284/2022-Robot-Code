@@ -12,6 +12,7 @@
 
 #include <rev/CANSparkMax.h>
 #include <frc/DigitalInput.h>
+#include <frc/filter/Debouncer.h>
 
 using namespace frc;
 using namespace rev;
@@ -30,6 +31,7 @@ public:
 	~CTransfer();
 	void Init();
 	void StartVertical();
+	void StartVerticalShot();
 	void StartFront();
 	void StartBack();
 	void StopVertical();
@@ -39,7 +41,7 @@ public:
 
 	// Arranged Vertical, Front, Back
 	bool m_aBallLocations[3] = {false, false, false};
-
+	bool m_bBallLocked = false;
 private:
 	// Declare class objects and variables.
 	DigitalInput*		m_pTopInfrared;

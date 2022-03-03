@@ -92,7 +92,7 @@ void CRobotMain::RobotInit()
 ******************************************************************************/
 void CRobotMain::RobotPeriodic()
 {
-
+	m_pShooter->Tick();
 }
 
 /******************************************************************************
@@ -239,34 +239,66 @@ void CRobotMain::TeleopPeriodic()
 	// Manually tick transfer system
 	m_pTransfer->UpdateLocations();
 
-	// If the front intake is on, and we don't have a ball in the vertical, start the front intake
-	if (m_pFrontIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) {
+	// We need to do some jankiness in order to lock the value of the vertical transfer sensor for shooting...
+	if(!m_pShooter->m_bShooterOn && m_pTransfer->m_aBallLocations[0]) {
+		m_pTransfer->m_bBallLocked = true;
+	}
+
+	// If the front/back intake is on, and we don't have a ball in the vertical, start the front/back transfer
+	if ( ( m_pFrontIntake->m_bIntakeOn || m_pBackIntake->m_bIntakeOn ) && !m_pTransfer->m_aBallLocations[0]) {
 		m_pTransfer->StartFront();
-		// m_pTransfer->StartBack();
-	}
-	else {
-		m_pTransfer->StopFront();
-		// m_pTransfer->StopBack();
-	}
-	// If we don't have a ball in the vertical transfer, start it
-	if (!m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartVertical();
-	else m_pTransfer->StopVertical();
-	
-	if ((m_pBackIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) || (!m_pTransfer->m_aBallLocations[0] && m_pTransfer->m_aBallLocations[2])) {
 		m_pTransfer->StartBack();
-		// m_pTransfer->StartFront();
 	}
-	else {
+
+	// You could use a chunky if statement for this logic, but that'd be horrible, so, no (:
+	int iBallCount = 0;
+	for(int i = 0; i < 3; i++) {
+		if(m_pTransfer->m_aBallLocations[i]) iBallCount += 1;
+	}
+
+	// If we don't have a ball in the vertical transfer, start it
+	if (!m_pTransfer->m_aBallLocations[0]) {
+		m_pTransfer->StartVertical();
+		// We need to feed the balls in the horizontal into the vertical and let them sit there.
+		if(iBallCount >= 1) {
+			m_pTransfer->StartFront();
+			m_pTransfer->StartBack();
+		}
+	}
+	// If the shooter isn't on and we have a ball in the transfer, stop the vertical to try and stop the ball in it.
+	else if(!m_pShooter->m_bShooterOn) {
+		m_pTransfer->StopVertical();
+	}
+	// If the shooter IS on and we have a ball in the transfer, start the vertical transfer to send it to the flywheel.
+	else if(m_pShooter->m_bShooterFullSpeed) {
+		m_pTransfer->StartVerticalShot();
+		m_pTransfer->m_bBallLocked = false;
+		/*
+		if(m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) {
+			m_pTransfer->StartVerticalShot();
+			m_pTransfer->m_bBallLocked = false;
+		}
+		*/
+	}
+
+	// If we have more than two balls at a time, we need to stop the intakes that we're running AND transfers to avoid shuffling the balls.
+	if( (m_pFrontIntake->m_bIntakeOn || m_pBackIntake->m_bIntakeOn) && iBallCount >= 2) {
+		// Stop either of the intakes
+		if(m_pFrontIntake->m_bIntakeOn) {
+			m_pFrontIntake->StopIntake();
+			m_pFrontIntake->StopDeploy();
+		}
+		if(m_pBackIntake->m_bIntakeOn) {
+			m_pBackIntake->StopIntake();
+			m_pBackIntake->StopDeploy();
+		}
+
+		// We need to stop the horizontal transfers as well.
+		m_pTransfer->StopFront();
 		m_pTransfer->StopBack();
-		// m_pTransfer->StopFront();
 	}
-	// If the shooter is on, and we have a ball in the vertical transfer;
-	// Then we should start the vertical transfer (with a ball in it) to feed it to the flywheel.
-	if (m_pShooter->m_bShooterOn && m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartVertical();
-	else m_pTransfer->StopVertical();
 
-
-	// Manually tick shooter
+	// Toggle on and off the flywheel with right trigger
 	if (m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->StartFlywheel();
 	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->Stop();
 
@@ -275,6 +307,13 @@ void CRobotMain::TeleopPeriodic()
 	**************************************************************************/
 
 	// TODO: Implement vision into Teleop
+
+
+
+	// Infrared updates
+	SmartDashboard::PutBoolean("Vertical Transfer Infrared", m_pTransfer->m_aBallLocations[0]);
+	SmartDashboard::PutBoolean("Front Transfer Infrared", m_pTransfer->m_aBallLocations[1]);
+	SmartDashboard::PutBoolean("Back Transfer Infrared", m_pTransfer->m_aBallLocations[2]);
 }
 
 /******************************************************************************
