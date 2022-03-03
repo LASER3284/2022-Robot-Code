@@ -32,6 +32,7 @@ public:
 	~CTransfer();
 	void Init();
 	void StartVertical();
+	void StartVerticalShot();
 	void StartFront();
 	void StartBack();
 	void StopVertical();
@@ -40,8 +41,8 @@ public:
 	void UpdateLocations();
 
 	// Arranged Vertical, Front, Back
-	bool    m_aBallLocations[3] = { false, false, false };
-
+	bool m_aBallLocations[3] = {false, false, false};
+	bool m_bBallLocked = false;
 private:
 	// Declare class objects and variables.
 

@@ -16,8 +16,15 @@
 using namespace frc;
 using namespace rev;
 using namespace units;
+using namespace ctre::phoenix::motorcontrol;
 
-const double dFlywheelMotorSpeed = 1.000;
+const double dFlywheelMotorSpeed = -0.700;
+
+// Calculate the expect peak sensor velocity (sensor units per 100ms) as:
+// (kMaxRPM / 600) * (kSensorUnitsPerRotation / kGearRatio)
+const double dPeakSensorVelocity = (6380 / 600) * (2048 / 1); 
+const double dExpectedSensorVelocity = dPeakSensorVelocity * dFlywheelMotorSpeed;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -32,18 +39,24 @@ public:
     CShooter();
     ~CShooter();
     void Init();
+    void Tick();
     void StartFlywheel();
 	void Stop();
     void SetSafety(bool bSafety);
 
     bool m_bShooterOn;
-
+    bool m_bShooterFullSpeed;
 private:
     // Declare class objects and variables.
     WPI_TalonFX*      m_pFlywheelMotor1;
     WPI_TalonFX*      m_pFlywheelMotor2;
 
     bool m_bSafety;
+
+    double m_dPropotional = 2.5;
+    double m_dIntegral = 1e-5;
+    double m_dDerivative = 0.001;
+    double m_dFeedForward = 0.045;
 };
 ///////////////////////////////////////////////////////////////////////////////
 

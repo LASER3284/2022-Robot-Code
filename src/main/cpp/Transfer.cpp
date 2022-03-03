@@ -45,7 +45,6 @@ CTransfer::~CTransfer()
 	delete m_pTopInfrared;
 	delete m_pFrontInfrared;
 	delete m_pBackInfrared;
-	delete m_pTopInfraredDebouncer;
 
 	m_pTopMotor			= nullptr;
 	m_pFrontMotor		= nullptr;
@@ -66,7 +65,7 @@ void CTransfer::Init()
 	m_pTopMotor->SetOpenLoopRampRate(0.500);
 	m_pFrontMotor->SetOpenLoopRampRate(0.500);
 	m_pBackMotor->SetOpenLoopRampRate(0.500);
-
+	m_bBallLocked = false;
 	UpdateLocations();
 }
 
@@ -81,13 +80,22 @@ void CTransfer::StartVertical()
 }
 
 /******************************************************************************
+	Description:	Start vertical transfer motor for shooting (higher RPM)
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CTransfer::StartVerticalShot() {
+	m_pTopMotor->Set(-0.950);
+}
+
+/******************************************************************************
 	Description:	Start front transfer motor
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
 void CTransfer::StartFront()
 {
-	// m_pFrontMotor->Set(0.250);
+	m_pFrontMotor->Set(-0.650);
 }
 
 /******************************************************************************
@@ -137,7 +145,10 @@ void CTransfer::StopBack()
 ******************************************************************************/
 void CTransfer::UpdateLocations()
 {
-	m_aBallLocations[0] = m_pTopInfraredDebouncer->Calculate(m_pTopInfrared->Get());
+	// Due to flutter in the sensor, we use a variable to "lock" the sensor until the shooter has shot the ball.
+	if(m_bBallLocked) m_aBallLocations[0] = true;
+	else m_aBallLocations[0] = m_pTopInfrared->Get();
+
 	m_aBallLocations[1] = m_pFrontInfrared->Get();
 	m_aBallLocations[2] = m_pBackInfrared->Get();
 }
