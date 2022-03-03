@@ -12,6 +12,7 @@
 
 #include <rev/CANSparkMax.h>
 #include <frc/DigitalInput.h>
+#include <frc/filter/Debouncer.h>
 
 using namespace frc;
 using namespace rev;
@@ -40,17 +41,20 @@ public:
 
 	// Arranged Vertical, Front, Back
 	bool    m_aBallLocations[3] = { false, false, false };
-	double  m_nTransferStartTime = 0;
 
 private:
 	// Declare class objects and variables.
+
 	DigitalInput*		m_pTopInfrared;
+	Debouncer*			m_pTopInfraredDebouncer;
+
 	DigitalInput*		m_pFrontInfrared;
 	DigitalInput*		m_pBackInfrared;
 
 	CANSparkMax*		m_pTopMotor;
 	CANSparkMax*		m_pFrontMotor;
 	CANSparkMax*		m_pBackMotor;
+	int 				m_nBallCount = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////////

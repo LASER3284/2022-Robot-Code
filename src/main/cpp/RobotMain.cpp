@@ -81,7 +81,6 @@ void CRobotMain::RobotInit()
 	m_pAutoChooser->SetDefaultOption("Autonomous Idle", "Autonomous Idle");
 	m_pAutoChooser->AddOption("Advancement", "Advancement");
 	SmartDashboard::PutData(m_pAutoChooser);
-
 	m_pTimer->Start();
 }
 
@@ -243,14 +242,11 @@ void CRobotMain::TeleopPeriodic()
 	if (m_pFrontIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) {
 		m_pTransfer->StartFront();
 		m_pTransfer->StartBack();
-		m_pTransfer->m_nTransferStartTime = (double)m_pTimer->Get();
 	}
 	else {
 		m_pTransfer->StopFront();
 		m_pTransfer->StopBack();
 	}
-
-	m_pTransfer->StartVertical();
 
 	// If we don't have a ball in the vertical transfer, start it
 	if (!m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartVertical();
@@ -280,6 +276,13 @@ void CRobotMain::TeleopPeriodic()
 	**************************************************************************/
 
 	// TODO: Implement vision into Teleop
+
+
+
+	// Smart dashboard updates
+	SmartDashboard::PutBoolean("Vertical Intake", m_pTransfer->m_aBallLocations[0]);
+	SmartDashboard::PutBoolean("Front Intake", m_pTransfer->m_aBallLocations[1]);
+	SmartDashboard::PutBoolean("Back Intake", m_pTransfer->m_aBallLocations[2]);
 }
 
 /******************************************************************************

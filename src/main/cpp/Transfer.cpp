@@ -8,6 +8,7 @@
 #include "Transfer.h"
 
 #include <frc/smartdashboard/SmartDashboard.h>
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -24,6 +25,11 @@ CTransfer::CTransfer()
 	m_pTopInfrared		= new DigitalInput(nTopTransferInfrared);
 	m_pFrontInfrared	= new DigitalInput(nFrontTransferInfrared);
 	m_pBackInfrared		= new DigitalInput(nBackTransferInfrared);
+
+	m_pTopInfraredDebouncer = new Debouncer(
+		5_ms,
+		Debouncer::DebounceType::kFalling
+	);
 }
 
 /******************************************************************************
@@ -39,13 +45,15 @@ CTransfer::~CTransfer()
 	delete m_pTopInfrared;
 	delete m_pFrontInfrared;
 	delete m_pBackInfrared;
-	
+	delete m_pTopInfraredDebouncer;
+
 	m_pTopMotor			= nullptr;
 	m_pFrontMotor		= nullptr;
 	m_pBackMotor		= nullptr;
 	m_pTopInfrared		= nullptr;
 	m_pFrontInfrared	= nullptr;
 	m_pBackInfrared		= nullptr;
+	m_pTopInfraredDebouncer = nullptr;
 }
 
 /******************************************************************************
@@ -55,7 +63,7 @@ CTransfer::~CTransfer()
 ******************************************************************************/
 void CTransfer::Init()
 {
-	m_pTopMotor->SetOpenLoopRampRate(0.250);
+	m_pTopMotor->SetOpenLoopRampRate(0.500);
 	m_pFrontMotor->SetOpenLoopRampRate(0.500);
 	m_pBackMotor->SetOpenLoopRampRate(0.500);
 
@@ -69,7 +77,7 @@ void CTransfer::Init()
 ******************************************************************************/
 void CTransfer::StartVertical()
 {
-	m_pTopMotor->Set(-0.650);
+	m_pTopMotor->Set(-0.250);
 }
 
 /******************************************************************************
@@ -129,7 +137,7 @@ void CTransfer::StopBack()
 ******************************************************************************/
 void CTransfer::UpdateLocations()
 {
-	m_aBallLocations[0] = m_pTopInfrared->Get();
+	m_aBallLocations[0] = m_pTopInfraredDebouncer->Calculate(m_pTopInfrared->Get());
 	m_aBallLocations[1] = m_pFrontInfrared->Get();
 	m_aBallLocations[2] = m_pBackInfrared->Get();
 }
