@@ -174,6 +174,7 @@ void CRobotMain::TeleopInit()
 	m_pBackIntake->Init();
 	m_pShooter->SetSafety(false);
 	m_pShooter->Init();
+	m_pShooter->IdleStop();
 	m_pPrevVisionPacket = new CVisionPacket();
 	m_pTransfer->Init();
 }
@@ -239,7 +240,7 @@ void CRobotMain::TeleopPeriodic()
 	m_pTransfer->UpdateLocations();
 
 	// We need to do some jankiness in order to lock the value of the vertical transfer sensor for shooting...
-	if(!m_pShooter->m_bShooterOn && m_pTransfer->m_aBallLocations[0]) {
+	if(!m_pShooter->m_bShooterFullSpeed && m_pTransfer->m_aBallLocations[0]) {
 		m_pTransfer->m_bBallLocked = true;
 	}
 
@@ -265,19 +266,13 @@ void CRobotMain::TeleopPeriodic()
 		}
 	}
 	// If the shooter isn't on and we have a ball in the transfer, stop the vertical to try and stop the ball in it.
-	else if(!m_pShooter->m_bShooterOn) {
+	else if(!m_pShooter->m_bShooterFullSpeed) {
 		m_pTransfer->StopVertical();
 	}
 	// If the shooter IS on and we have a ball in the transfer, start the vertical transfer to send it to the flywheel.
 	else if(m_pShooter->m_bShooterFullSpeed) {
 		m_pTransfer->StartVerticalShot();
 		m_pTransfer->m_bBallLocked = false;
-		/*
-		if(m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) {
-			m_pTransfer->StartVerticalShot();
-			m_pTransfer->m_bBallLocked = false;
-		}
-		*/
 	}
 
 	// If we have more than two balls at a time, we need to stop the intakes that we're running AND transfers to avoid shuffling the balls.
@@ -297,9 +292,9 @@ void CRobotMain::TeleopPeriodic()
 		m_pTransfer->StopBack();
 	}
 
-	// Toggle on and off the flywheel with right trigger
-	if (m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->StartFlywheel();
-	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->Stop();
+	// Toggle on and off the flywheel with A and B respectively/
+	if (m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->StartFlywheelShot();
+	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->IdleStop();
 
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings

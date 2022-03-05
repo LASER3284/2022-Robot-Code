@@ -91,7 +91,13 @@ void CIntake::ToggleIntake()
 ******************************************************************************/
 void CIntake::StopDeploy()
 {
-	m_pIntakeDeployMotorController1->Set(0.000);
+	int idleAmount = 0;
+
+	// If the goal is up, then we want to set a bit of negative motion
+	if(m_bGoal) idleAmount = -0.05;
+	else idleAmount = 0.05;
+
+	m_pIntakeDeployMotorController1->Set(idleAmount);
 }
 
 /******************************************************************************

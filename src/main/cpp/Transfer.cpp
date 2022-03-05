@@ -25,11 +25,6 @@ CTransfer::CTransfer()
 	m_pTopInfrared		= new DigitalInput(nTopTransferInfrared);
 	m_pFrontInfrared	= new DigitalInput(nFrontTransferInfrared);
 	m_pBackInfrared		= new DigitalInput(nBackTransferInfrared);
-
-	m_pTopInfraredDebouncer = new Debouncer(
-		5_ms,
-		Debouncer::DebounceType::kFalling
-	);
 }
 
 /******************************************************************************
@@ -52,7 +47,6 @@ CTransfer::~CTransfer()
 	m_pTopInfrared		= nullptr;
 	m_pFrontInfrared	= nullptr;
 	m_pBackInfrared		= nullptr;
-	m_pTopInfraredDebouncer = nullptr;
 }
 
 /******************************************************************************
@@ -63,8 +57,8 @@ CTransfer::~CTransfer()
 void CTransfer::Init()
 {
 	m_pTopMotor->SetOpenLoopRampRate(0.500);
-	m_pFrontMotor->SetOpenLoopRampRate(0.500);
-	m_pBackMotor->SetOpenLoopRampRate(0.500);
+	m_pFrontMotor->SetOpenLoopRampRate(0.250);
+	m_pBackMotor->SetOpenLoopRampRate(0.250);
 	m_bBallLocked = false;
 	UpdateLocations();
 }
@@ -125,7 +119,7 @@ void CTransfer::StopVertical()
 ******************************************************************************/
 void CTransfer::StopFront()
 {
-	// m_pFrontMotor->Set(0.000);
+	m_pFrontMotor->Set(0.000);
 }
 
 /******************************************************************************

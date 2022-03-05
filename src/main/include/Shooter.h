@@ -18,12 +18,16 @@ using namespace rev;
 using namespace units;
 using namespace ctre::phoenix::motorcontrol;
 
-const double dFlywheelMotorSpeed = -0.700;
+// Normal Speed: 0.70
+const double dFlywheelMotorSpeed = -0.500;
+const double dIdleMotorSpeed = -0.250;
+
 
 // Calculate the expect peak sensor velocity (sensor units per 100ms) as:
 // (kMaxRPM / 600) * (kSensorUnitsPerRotation / kGearRatio)
 const double dPeakSensorVelocity = (6380 / 600) * (2048 / 1); 
-const double dExpectedSensorVelocity = dPeakSensorVelocity * dFlywheelMotorSpeed;
+const double dExpectedShotVelocity = dPeakSensorVelocity * dFlywheelMotorSpeed;
+const double dExpectedIdleVelocity = dPeakSensorVelocity * dIdleMotorSpeed;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -40,7 +44,8 @@ public:
     ~CShooter();
     void Init();
     void Tick();
-    void StartFlywheel();
+    void StartFlywheelShot();
+    void IdleStop();
 	void Stop();
     void SetSafety(bool bSafety);
 

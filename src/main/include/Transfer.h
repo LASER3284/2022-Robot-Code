@@ -45,10 +45,7 @@ public:
 	bool m_bBallLocked = false;
 private:
 	// Declare class objects and variables.
-
 	DigitalInput*		m_pTopInfrared;
-	Debouncer*			m_pTopInfraredDebouncer;
-
 	DigitalInput*		m_pFrontInfrared;
 	DigitalInput*		m_pBackInfrared;
 

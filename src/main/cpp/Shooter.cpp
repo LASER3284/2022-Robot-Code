@@ -81,7 +81,8 @@ void CShooter::Init()
 	m_bShooterOn = false;
 	m_bShooterFullSpeed = false;
 
-	SmartDashboard::PutNumber("dExpectedShooterVelocity", dExpectedSensorVelocity);
+	SmartDashboard::PutNumber("dExpectedShotVelocity", dExpectedShotVelocity);
+	SmartDashboard::PutNumber("dExpectedIdleVelocity", dExpectedIdleVelocity);
 }
 
 /******************************************************************************
@@ -89,11 +90,19 @@ void CShooter::Init()
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
-void CShooter::StartFlywheel()
+void CShooter::StartFlywheelShot()
 {
 	if (!m_bSafety) 
 	{
-		m_pFlywheelMotor1->Set(ControlMode::Velocity, dExpectedSensorVelocity);
+		m_pFlywheelMotor1->Set(ControlMode::Velocity, dExpectedShotVelocity);
+		m_bShooterOn = true;
+	}
+	else Stop();
+}
+
+void CShooter::IdleStop() {
+	if(!m_bSafety) {
+		m_pFlywheelMotor1->Set(ControlMode::Velocity, dExpectedIdleVelocity);
 		m_bShooterOn = true;
 	}
 	else Stop();
@@ -107,6 +116,6 @@ void CShooter::StartFlywheel()
 void CShooter::Tick() {
 	double dMotor1Velocity = m_pFlywheelMotor1->GetSelectedSensorVelocity();
 	SmartDashboard::PutNumber("dMotor1Velocity", dMotor1Velocity);
-	double dVelocityDiff = abs(dMotor1Velocity - dExpectedSensorVelocity);
+	double dVelocityDiff = abs(dMotor1Velocity - dExpectedShotVelocity);
 	m_bShooterFullSpeed = (dVelocityDiff < 125);
 }
