@@ -80,8 +80,8 @@ bool CIntake::IsGoalPressed()
 ******************************************************************************/
 void CIntake::ToggleIntake()
 {
-	if (m_bGoal)	{	m_pIntakeDeployMotorController1->Set(-0.250);	}		// Reverse to take it up
-	else			{	m_pIntakeDeployMotorController1->Set(0.250);	}		// Forward to take it down
+	if (m_bGoal)	{	m_pIntakeDeployMotorController1->Set(-0.350);	}		// Reverse to take it up
+	else			{	m_pIntakeDeployMotorController1->Set(0.350);	}		// Forward to take it down
 }
 
 /******************************************************************************
@@ -105,9 +105,15 @@ void CIntake::StopDeploy()
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
-void CIntake::StartIntake()
+void CIntake::StartIntake(bool bSafe)
 {
-	if (IsGoalPressed() && !m_bGoal) {
+	if(bSafe) {
+		if (IsGoalPressed() && !m_bGoal) {
+			m_pIntakeMotor1->Set(-1.000);
+			m_bIntakeOn = true;
+		}
+	}
+	else {
 		m_pIntakeMotor1->Set(-1.000);
 		m_bIntakeOn = true;
 	}

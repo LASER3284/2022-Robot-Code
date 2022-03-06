@@ -117,5 +117,5 @@ void CShooter::Tick() {
 	double dMotor1Velocity = m_pFlywheelMotor1->GetSelectedSensorVelocity();
 	SmartDashboard::PutNumber("dMotor1Velocity", dMotor1Velocity);
 	double dVelocityDiff = abs(dMotor1Velocity - dExpectedShotVelocity);
-	m_bShooterFullSpeed = (dVelocityDiff < 125);
+	m_bShooterFullSpeed = (dVelocityDiff < 100);
 }

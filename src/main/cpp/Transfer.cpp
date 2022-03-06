@@ -25,6 +25,19 @@ CTransfer::CTransfer()
 	m_pTopInfrared		= new DigitalInput(nTopTransferInfrared);
 	m_pFrontInfrared	= new DigitalInput(nFrontTransferInfrared);
 	m_pBackInfrared		= new DigitalInput(nBackTransferInfrared);
+
+	m_pFrontDebouncer = new Debouncer {
+		20_ms,
+		Debouncer::DebounceType::kBoth
+	};
+	m_pBackDebouncer = new Debouncer {
+		20_ms,
+		Debouncer::DebounceType::kBoth
+	};
+	m_pTopDebouncer = new Debouncer {
+		20_ms,
+		Debouncer::DebounceType::kBoth
+	};
 }
 
 /******************************************************************************
@@ -56,9 +69,9 @@ CTransfer::~CTransfer()
 ******************************************************************************/
 void CTransfer::Init()
 {
-	m_pTopMotor->SetOpenLoopRampRate(0.500);
-	m_pFrontMotor->SetOpenLoopRampRate(0.250);
-	m_pBackMotor->SetOpenLoopRampRate(0.250);
+	m_pTopMotor->SetOpenLoopRampRate(0.250);
+	m_pFrontMotor->SetOpenLoopRampRate(0.750);
+	m_pBackMotor->SetOpenLoopRampRate(0.750);
 	m_bBallLocked = false;
 	UpdateLocations();
 }
@@ -89,7 +102,7 @@ void CTransfer::StartVerticalShot() {
 ******************************************************************************/
 void CTransfer::StartFront()
 {
-	m_pFrontMotor->Set(-0.650);
+	m_pFrontMotor->Set(-0.850);
 }
 
 /******************************************************************************
@@ -99,7 +112,7 @@ void CTransfer::StartFront()
 ******************************************************************************/
 void CTransfer::StartBack()
 {
-	m_pBackMotor->Set(0.650);
+	m_pBackMotor->Set(0.850);
 }
 
 /******************************************************************************
@@ -141,8 +154,8 @@ void CTransfer::UpdateLocations()
 {
 	// Due to flutter in the sensor, we use a variable to "lock" the sensor until the shooter has shot the ball.
 	if(m_bBallLocked) m_aBallLocations[0] = true;
-	else m_aBallLocations[0] = m_pTopInfrared->Get();
+	else m_aBallLocations[0] = m_pTopDebouncer->Calculate(m_pTopInfrared->Get());
 
-	m_aBallLocations[1] = m_pFrontInfrared->Get();
-	m_aBallLocations[2] = m_pBackInfrared->Get();
+	m_aBallLocations[1] = m_pFrontDebouncer->Calculate(m_pFrontInfrared->Get());
+	m_aBallLocations[2] = m_pBackDebouncer->Calculate(m_pBackInfrared->Get());
 }

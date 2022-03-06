@@ -31,7 +31,7 @@ public:
 	bool IsGoalPressed();
 	void ToggleIntake();
 	void StopDeploy();
-	void StartIntake();
+	void StartIntake(bool bSafe = true);
 	void StopIntake();
 
 	// Public members

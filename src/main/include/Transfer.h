@@ -53,6 +53,10 @@ private:
 	CANSparkMax*		m_pFrontMotor;
 	CANSparkMax*		m_pBackMotor;
 	int 				m_nBallCount = 0;
+
+	Debouncer*			m_pTopDebouncer;
+	Debouncer*			m_pFrontDebouncer;
+	Debouncer*			m_pBackDebouncer;
 };
 
 //////////////////////////////////////////////////////////////////////////////
