@@ -37,14 +37,6 @@ public:
 	void TestPeriodic() override;
 
 private:
-	enum AutoStates {
-		eAutoStopped = 0,
-		eAutoIdle,
-		eAutoAiming,
-		eAutoFiring,
-		eAutoFollowing
-	};
-
 	enum TeleopStates {
 		eTeleopStopped = 0,
 		eTeleopIdle,
@@ -70,8 +62,7 @@ private:
 
 	double	m_dStartTime;							// A double representing start time
 	int		m_nAutoState;							// Current Auto state
-	int		m_nPathState;							// Current Auto sub-path
 	int		m_nTeleopState;							// Current Teleop state
-	//int		m_nPreviousState;						// Previous state
+	int		m_nPreviousState;						// Previous state
 };
 #endif
