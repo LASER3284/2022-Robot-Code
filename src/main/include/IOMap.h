@@ -33,7 +33,8 @@ const int nTransferVertical             =  14;      // Top belt motor           
 const int nIntakeDeployMotor1           =  16;      // Intake Deploy motor one  (TALON SRX controller)
 const int nIntakeDeployMotor2           =  17;      // Intake Deploy motor two  (TALON SRX controller)
 const int nIntakeDeployMotor3           =  18;
-const int nIntakeDeployMotor4           =  19;      
+const int nIntakeDeployMotor4           =  19;     
+const int nHoodMotor                    =  20; 
 
 // PWM Channels.
 const int nBlinkinID					=	1;		// PWM channel for Blinkin LED driver

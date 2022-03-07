@@ -34,7 +34,7 @@ CRobotMain::CRobotMain()
 	m_pShooter					= new CShooter();
 	m_nAutoState				= eAutoStopped;
 	m_dStartTime				= 0.0;
-	//m_nPreviousState			= eTeleopStopped;
+	m_nPreviousState			= eTeleopStopped;
 	m_pPrevVisionPacket         = new CVisionPacket();
 	m_pTransfer					= new CTransfer();
 }
@@ -80,6 +80,7 @@ void CRobotMain::RobotInit()
 	// Setup autonomous chooser.
 	m_pAutoChooser->SetDefaultOption("Autonomous Idle", "Autonomous Idle");
 	m_pAutoChooser->AddOption("Advancement", "Advancement");
+	m_pAutoChooser->AddOption("Test Path", "Test Path");
 	SmartDashboard::PutData(m_pAutoChooser);
 	m_pTimer->Start();
 }
@@ -108,20 +109,22 @@ void CRobotMain::AutonomousInit()
 	// TODO: deploy intake for all of auto period
 
 	// Record start time
-	//m_dStartTime = (double)m_pTimer->Get();
+	m_dStartTime = (double)m_pTimer->Get();
 
 	// Get selected option and switch m_nPathState based on that
 	m_strAutoSelected = m_pAutoChooser->GetSelected();
 	m_nAutoState = eAutoIdle;
-	m_nPathState = -1;
 	if (m_strAutoSelected == "Advancement")
 	{
-		m_nPathState = eAdvancement1;
-		m_nAutoState = eAutoFollowing;
+		m_nAutoState = eAdvancement1;
+	}
+	if (m_strAutoSelected == "Test Path")
+	{
+		m_nAutoState = eTestPath;
 	}
 	
 	// Set selected trajectory
-	m_pDrive->SetTrajectory(m_nPathState);
+	m_pDrive->SetTrajectory(m_nAutoState);
 }
 
 /******************************************************************************
@@ -136,27 +139,32 @@ void CRobotMain::AutonomousPeriodic()
 		// Force stop everything
 		case eAutoStopped:
 			m_pDrive->ForceStop();
-			m_nAutoState = eAutoIdle;
+			m_nPreviousState = eAutoStopped;
 			break;
 
 		// Do nothing
 		case eAutoIdle:
+			switch (m_nPreviousState)
+			{
+				case eAdvancement1:
+					m_nAutoState = eAdvancement2;
+					break;
+				case eTestPath:
+					m_nAutoState = eAutoStopped;
+				default:
+					m_nAutoState = eAutoIdle;
+					break;
+			}
 			break;
-
-		// Aim robot based on vision
-		case eAutoAiming:
-			// TODO: apply Vision to this
-			break;
-
-		// Fire ball towards Hub
-		case eAutoFiring:
-			// TODO: add firing routines with shooter
-			break;
-
-		// Follow selected trajectory
-		case eAutoFollowing:
+		
+		// Test Path
+		case eTestPath:
 			m_pDrive->FollowTrajectory();
-			if (m_pDrive->IsTrajectoryFinished()) m_nAutoState = eAutoAiming;
+			if (m_pDrive->IsTrajectoryFinished()) 
+			{
+				m_nPreviousState = eTestPath;
+				m_nAutoState = eAutoIdle;
+			}
 			break;
 	}
 }

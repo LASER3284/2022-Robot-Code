@@ -13,13 +13,6 @@
 using namespace ctre::phoenix::motorcontrol::can;
 using namespace frc;
 
-// LiftStates enumerator
-enum LiftStates {eLiftIdle = 0};
-
-const double nCounterRev = 2048.0;
-const double dCountToMAX = 2.0;
-///////////////////////////////////////////////////////////////////////////////
-
 /******************************************************************************
 	Description:	CLift class definition.
 	Arguments:		None
@@ -31,18 +24,11 @@ public:
 	// Declare class methods.
 	CLift();
 	~CLift();
-	void Init();
-	void ExtendArms();
-	void SwingArms();
-	void Retract();
-	void Unswing();
 
 private:
 	// Declare class objects and variables.
 	WPI_TalonFX*		m_pLiftMotor1;
 	WPI_TalonFX*		m_pLiftMotor2;
-	Solenoid*			m_pLeftSolenoid;
-	Solenoid*			m_pRightSolenoid;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif

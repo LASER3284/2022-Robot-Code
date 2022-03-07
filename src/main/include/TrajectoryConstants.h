@@ -18,7 +18,9 @@ using namespace std;
 using namespace wpi;
 
 enum Paths {
-	eTestPath = 1,
+	eAutoStopped = 0,
+	eAutoIdle,
+	eTestPath,
 	eAdvancement1,
 	eAdvancement2
 };
@@ -33,7 +35,7 @@ public:
 	// One-line methods.
 	Pose2d GetSelectedTrajectoryStartPoint()	{	return m_SelectedPath.InitialPose();		};
 	Trajectory GetSelectedTrajectory()			{	return m_SelectedPath;						};
-	double GetSelectedTrajectoryTotalTime()		{	return double(m_SelectedPath.TotalTime());	};
+	double GetSelectedTrajectoryTotalTime()		{	return (double)m_SelectedPath.TotalTime();	};
 
 private:
 	Trajectory m_SelectedPath;
