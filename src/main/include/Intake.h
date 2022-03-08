@@ -44,7 +44,6 @@ private:
 	DigitalInput*	m_pLimitSwitchUp;
 	CANSparkMax*	m_pIntakeMotor1;
 	WPI_TalonSRX*	m_pIntakeDeployMotorController1;
-	WPI_TalonSRX*	m_pIntakeDeployMotorController2;
 
 	bool m_bIntakeUp;
 	bool m_bIntakeDown;

@@ -19,8 +19,8 @@ using namespace units;
 using namespace ctre::phoenix::motorcontrol;
 
 // Normal Speed: 0.700
-const double dFlywheelMotorSpeed = -0.755;
-const double dIdleMotorSpeed = -0.500;
+const double dFlywheelMotorSpeed = 0.525;
+const double dIdleMotorSpeed = 0.500;
 
 
 // Calculate the expect peak sensor velocity (sensor units per 100ms) as:

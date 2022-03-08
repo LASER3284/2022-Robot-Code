@@ -28,14 +28,14 @@ CTransfer::CTransfer()
 
 	m_pFrontDebouncer = new Debouncer {
 		20_ms,
-		Debouncer::DebounceType::kBoth
+		Debouncer::DebounceType::kFalling
 	};
 	m_pBackDebouncer = new Debouncer {
 		20_ms,
 		Debouncer::DebounceType::kBoth
 	};
 	m_pTopDebouncer = new Debouncer {
-		20_ms,
+		25_ms,
 		Debouncer::DebounceType::kBoth
 	};
 }

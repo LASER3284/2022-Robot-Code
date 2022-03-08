@@ -93,6 +93,13 @@ void CRobotMain::RobotInit()
 void CRobotMain::RobotPeriodic()
 {
 	m_pShooter->Tick();
+
+	// Tick transfer system
+	m_pTransfer->UpdateLocations();
+	
+	SmartDashboard::PutBoolean("Vertical Transfer Infrared", m_pTransfer->m_aBallLocations[0]);
+	SmartDashboard::PutBoolean("Front Transfer Infrared", m_pTransfer->m_aBallLocations[1]);
+	SmartDashboard::PutBoolean("Back Transfer Infrared", m_pTransfer->m_aBallLocations[2]);
 }
 
 /******************************************************************************
@@ -104,6 +111,7 @@ void CRobotMain::AutonomousInit()
 {
 	// Init Drive and disable joystick
 	m_pDrive->Init();
+	m_pDrive->SetDriveSafety(false);
 	m_pDrive->SetJoystickControl(false);
 
 	// TODO: deploy intake for all of auto period
@@ -151,6 +159,7 @@ void CRobotMain::AutonomousPeriodic()
 					break;
 				case eTestPath:
 					m_nAutoState = eAutoStopped;
+					break;
 				default:
 					m_nAutoState = eAutoIdle;
 					break;
@@ -249,8 +258,6 @@ void CRobotMain::TeleopPeriodic()
 		m_pBackIntake->m_bGoal = !m_pBackIntake->m_bGoal;
 	}
 	
-	// Manually tick transfer system
-	m_pTransfer->UpdateLocations();
 
 	// We need to do some jankiness in order to lock the value of the vertical transfer sensor for shooting...
 	if(!m_pShooter->m_bShooterFullSpeed && m_pTransfer->m_aBallLocations[0]) {
@@ -309,11 +316,6 @@ void CRobotMain::TeleopPeriodic()
 	// TODO: Implement vision into Teleop
 
 
-	// Infrared updates
-	SmartDashboard::PutBoolean("Vertical Transfer Infrared", m_pTransfer->m_aBallLocations[0]);
-	SmartDashboard::PutBoolean("Front Transfer Infrared", m_pTransfer->m_aBallLocations[1]);
-	SmartDashboard::PutBoolean("Back Transfer Infrared", m_pTransfer->m_aBallLocations[2]);
-	SmartDashboard::PutNumber("iBallCount", iBallCount);
 }
 
 /******************************************************************************
