@@ -66,6 +66,7 @@ public:
 	void FollowTrajectory();
 	DifferentialDriveWheelSpeeds GetWheelSpeeds();
 	void SetDrivePowers(volt_t dLeftVoltage, volt_t dRightVoltage);
+	void SetDriveSpeeds(double dLeftVoltage, double dRightVoltage);
 	bool IsTrajectoryFinished();
 	void GoForwardUntuned();				// NOTE: this is untuned and shouldn't be used in non-beta versions
 	void TurnByAngle(double dTheta);

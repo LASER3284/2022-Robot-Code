@@ -41,7 +41,8 @@ CDrive::~CDrive()
 	delete m_pFollowMotor2;
 	delete m_pRobotDrive;
 	delete m_pGyro;
-	
+	delete m_pOdometry;
+
 	m_pDriveController	= nullptr;
 	m_pLeadDriveMotor1	= nullptr;
 	m_pLeadDriveMotor2	= nullptr;
@@ -49,6 +50,7 @@ CDrive::~CDrive()
 	m_pFollowMotor2		= nullptr;
 	m_pRobotDrive		= nullptr;
 	m_pGyro				= nullptr;
+	m_pOdometry			= nullptr;
 }
 
 /******************************************************************************
@@ -77,7 +79,8 @@ void CDrive::Init()
 
 	// Reset encoders and odometry
 	ResetOdometry();
-
+	m_pOdometry	= new DifferentialDriveOdometry(m_pGyro->GetRotation2d());
+	
 	m_pTimer->Start();
 }
 
@@ -179,7 +182,6 @@ void CDrive::SetDriveSafety(bool bDriveSafety)
 void CDrive::FollowTrajectory()
 {
 	SetDriveSafety(false);
-
 	m_pRamseteCommand->Execute();
 }
 
@@ -215,6 +217,17 @@ void CDrive::SetDrivePowers(volt_t dLeftVoltage, volt_t dRightVoltage)
 {
 	m_pLeadDriveMotor1->SetMotorVoltage((double)dLeftVoltage);
 	m_pLeadDriveMotor2->SetMotorVoltage((double)dRightVoltage);
+}
+
+/******************************************************************************
+    Description:	Sets the voltage on each motor to the desired voltage
+	Arguments:		double dLeftVoltage, double dRightVoltage
+	Returns:		Nothing
+******************************************************************************/
+void CDrive::SetDriveSpeeds(double dLeftVoltage, double dRightVoltage)
+{
+	m_pLeadDriveMotor1->SetMotorVoltage(dLeftVoltage);
+	m_pLeadDriveMotor2->SetMotorVoltage(dRightVoltage);
 }
 
 /******************************************************************************

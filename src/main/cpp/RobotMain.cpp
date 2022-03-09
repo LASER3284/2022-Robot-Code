@@ -80,7 +80,8 @@ void CRobotMain::RobotInit()
 	// Setup autonomous chooser.
 	m_pAutoChooser->SetDefaultOption("Autonomous Idle", "Autonomous Idle");
 	m_pAutoChooser->AddOption("Advancement", "Advancement");
-	m_pAutoChooser->AddOption("Test Path", "Test Path");
+	//  m_pAutoChooser->AddOption("Test Path", "Test Path");
+	m_pAutoChooser->AddOption("Dumb Taxi", "Dumb Taxi");
 	SmartDashboard::PutData(m_pAutoChooser);
 	m_pTimer->Start();
 }
@@ -130,9 +131,13 @@ void CRobotMain::AutonomousInit()
 	{
 		m_nAutoState = eTestPath;
 	}
-	
-	// Set selected trajectory
-	m_pDrive->SetTrajectory(m_nAutoState);
+
+	if(m_strAutoSelected == "Dumb Taxi") m_nAutoState = eDumbTaxi;
+	else 
+	{
+		// Set selected trajectory
+		m_pDrive->SetTrajectory(m_nAutoState);
+	}
 }
 
 /******************************************************************************
@@ -174,6 +179,13 @@ void CRobotMain::AutonomousPeriodic()
 				m_nPreviousState = eTestPath;
 				m_nAutoState = eAutoIdle;
 			}
+			break;
+
+		case eDumbTaxi:
+			if( ( (double)m_pTimer->Get() - m_dStartTime) < 2.000) 
+				m_pDrive->SetDriveSpeeds(-6.000, -6.000);
+			else 
+				m_nAutoState = eAutoStopped;
 			break;
 	}
 }
@@ -309,6 +321,9 @@ void CRobotMain::TeleopPeriodic()
 	// Toggle on and off the flywheel with A and B respectively.
 	if (m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->StartFlywheelShot();
 	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->IdleStop();
+
+	if (m_pAuxController->GetPOV() == 0) m_pShooter->AdjustVelocity(0.001);
+	if (m_pAuxController->GetPOV() == 180) m_pShooter->AdjustVelocity(-0.001);
 
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings

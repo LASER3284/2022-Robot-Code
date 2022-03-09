@@ -21,8 +21,9 @@ enum Paths {
 	eAutoStopped = 0,
 	eAutoIdle,
 	eTestPath,
+	eDumbTaxi,
 	eAdvancement1,
-	eAdvancement2
+	eAdvancement2,
 };
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -33,12 +34,12 @@ public:
 	void SelectTrajectory(Trajectory Path);
 
 	// One-line methods.
-	Pose2d GetSelectedTrajectoryStartPoint()	{	return m_SelectedPath.InitialPose();		};
-	Trajectory GetSelectedTrajectory()			{	return m_SelectedPath;						};
-	double GetSelectedTrajectoryTotalTime()		{	return (double)m_SelectedPath.TotalTime();	};
+	Pose2d GetSelectedTrajectoryStartPoint()	{	return m_pSelectedPath->InitialPose();		};
+	Trajectory GetSelectedTrajectory()			{	return *m_pSelectedPath;						};
+	double GetSelectedTrajectoryTotalTime()		{	return (double)m_pSelectedPath->TotalTime();	};
 
 private:
-	Trajectory m_SelectedPath;
+	Trajectory* m_pSelectedPath;
 };
 
 #endif
