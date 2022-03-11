@@ -22,7 +22,7 @@ CShooter::CShooter() {
 }		
 
 /******************************************************************************
-	Description:	CTransfer destructor, delete variables
+	Description:	CShooter destructor, delete variables
 	Arguments:		None
 	Derived from:	Nothing
 ******************************************************************************/
@@ -36,7 +36,7 @@ CShooter::~CShooter()
 }
 
 /******************************************************************************
-	Description:	CTransfer destructor, delete variables
+	Description:	Bring the flywheel to a stop completely
 	Arguments:		None
 	Derived from:	Nothing
 ******************************************************************************/
@@ -47,7 +47,7 @@ void CShooter::Stop()
 }
 
 /******************************************************************************
-	Description:	CTransfer destructor, delete variables
+	Description:	Set the member safety variable
 	Arguments:		None
 	Derived from:	Nothing
 ******************************************************************************/
@@ -102,6 +102,11 @@ void CShooter::StartFlywheelShot()
 	else IdleStop();
 }
 
+/******************************************************************************
+	Description:	Idle the flywheel
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
 void CShooter::IdleStop() {
 	if(!m_bSafety) {
 		m_pFlywheelMotor1->Set(ControlMode::Velocity, m_dExpectedIdleVelocity);
@@ -124,8 +129,8 @@ void CShooter::Tick() {
 }
 
 /******************************************************************************
-	Description:	A tick function that checks the speed of the flywheel to see if it is at full speed.
-	Arguments:		None
+	Description:	Change the base speed of the flywheel in percentage of dVelocityPercent
+	Arguments:		double dVelocityPercent - percentage to change base by
 	Returns:		Nothing
 ******************************************************************************/
 void CShooter::AdjustVelocity(double dVelocityPercent) {

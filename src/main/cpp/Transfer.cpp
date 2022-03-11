@@ -53,6 +53,9 @@ CTransfer::~CTransfer()
 	delete m_pTopInfrared;
 	delete m_pFrontInfrared;
 	delete m_pBackInfrared;
+	delete m_pFrontDebouncer;
+	delete m_pBackDebouncer;
+	delete m_pTopDebouncer;
 
 	m_pTopMotor			= nullptr;
 	m_pFrontMotor		= nullptr;
@@ -60,6 +63,9 @@ CTransfer::~CTransfer()
 	m_pTopInfrared		= nullptr;
 	m_pFrontInfrared	= nullptr;
 	m_pBackInfrared		= nullptr;
+	m_pFrontDebouncer	= nullptr;
+	m_pBackDebouncer	= nullptr;
+	m_pTopDebouncer		= nullptr;
 }
 
 /******************************************************************************
