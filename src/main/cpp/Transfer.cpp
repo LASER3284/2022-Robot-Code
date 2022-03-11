@@ -29,7 +29,7 @@ CTransfer::CTransfer()
 	m_pFrontDebouncer = new Debouncer {
 		20_ms,
 		Debouncer::DebounceType::kBoth
-	};
+	}; 
 	m_pBackDebouncer = new Debouncer {
 		20_ms,
 		Debouncer::DebounceType::kBoth
