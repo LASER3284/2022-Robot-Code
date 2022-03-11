@@ -27,7 +27,7 @@ CTransfer::CTransfer()
 	m_pBackInfrared		= new DigitalInput(nBackTransferInfrared);
 
 	m_pFrontDebouncer = new Debouncer {
-		20_ms,
+		150_ms,
 		Debouncer::DebounceType::kBoth
 	}; 
 	m_pBackDebouncer = new Debouncer {
@@ -35,7 +35,7 @@ CTransfer::CTransfer()
 		Debouncer::DebounceType::kBoth
 	};
 	m_pTopDebouncer = new Debouncer {
-		20_ms,
+		25_ms,
 		Debouncer::DebounceType::kBoth
 	};
 }
@@ -156,6 +156,6 @@ void CTransfer::UpdateLocations()
 	if(m_bBallLocked) m_aBallLocations[0] = true;
 	else m_aBallLocations[0] = m_pTopDebouncer->Calculate(m_pTopInfrared->Get());
 
-	m_aBallLocations[1] = m_pFrontDebouncer->Calculate(m_pFrontInfrared->Get());
+	m_aBallLocations[1] = !m_pFrontDebouncer->Calculate(m_pFrontInfrared->Get());
 	m_aBallLocations[2] = m_pBackDebouncer->Calculate(m_pBackInfrared->Get());
 }

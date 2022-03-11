@@ -15,28 +15,32 @@
 ******************************************************************************/
 void CTrajectoryConstants::SelectTrajectory(int nSelection)
 {
+	Trajectory path;
 	switch(nSelection)
 	{
 		case eTestPath:
 			// Read and store the trajectory from a pre-generated JSON file
-			m_SelectedPath = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/TestPath.wpilib.json");
+			path = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/TestPath.wpilib.json");
 			break;
 
 		case eAdvancement1:
 			// Read and store the trajectory from a pre-generated JSON file
-			m_SelectedPath = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/Advancement1.wpilib.json");
+			path = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/Advancement1.wpilib.json");
 			break;
 			
 		case eAdvancement2:
 			// Read and store the trajectory from a pre-generated JSON file
-			m_SelectedPath = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/Advancement2.wpilib.json");
+			path = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/Advancement2.wpilib.json");
 			break;
 		
 		default:
 			// Read and store the trajectory from a pre-generated JSON file
-			m_SelectedPath = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/TestPath.wpilib.json");
+			path = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/TestPath.wpilib.json");
 			break;
 	}
+
+	m_pSelectedPath = (Trajectory*)malloc(sizeof(path) + 1);
+	memcpy(m_pSelectedPath, &path, sizeof(path) + 1);
 }
 
 /******************************************************************************
@@ -46,5 +50,8 @@ void CTrajectoryConstants::SelectTrajectory(int nSelection)
 ******************************************************************************/
 void CTrajectoryConstants::SelectTrajectory(Trajectory Path)
 {
-	m_SelectedPath = Path;
+	free(m_pSelectedPath);
+	
+	m_pSelectedPath = (Trajectory*)malloc(sizeof(Path));
+	memcpy(m_pSelectedPath, &Path, sizeof(Path));
 }

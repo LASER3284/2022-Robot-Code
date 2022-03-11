@@ -16,11 +16,9 @@ CIntake::CIntake(int nIntakeMotor1, int nIntakeDownLimitSwitch, int nIntakeUpLim
 {
 	m_pIntakeMotor1					= new CANSparkMax(nIntakeMotor1, CANSparkMaxLowLevel::MotorType::kBrushless);
 	m_pIntakeDeployMotorController1	= new WPI_TalonSRX(nDeployController);
-	m_pIntakeDeployMotorController2	= new WPI_TalonSRX(nDeployController + 2);
 	m_pLimitSwitchDown				= new DigitalInput(nIntakeDownLimitSwitch);
 	m_pLimitSwitchUp				= new DigitalInput(nIntakeUpLimitSwitch);
 	m_pIntakeDeployMotorController1->SetInverted(bIntakePosition);
-	m_pIntakeDeployMotorController2->SetInverted(!bIntakePosition);
 	m_pIntakeMotor1->SetInverted(bIntakePosition);
 }
 
@@ -54,8 +52,6 @@ void CIntake::Init()
 
 	// Set right motor to follow the left
 	m_pIntakeDeployMotorController1->ConfigOpenloopRamp(0.500);
-	m_pIntakeDeployMotorController2->ConfigOpenloopRamp(0.500);
-	m_pIntakeDeployMotorController2->Follow(*m_pIntakeDeployMotorController1);
 
 	// Set open loop ramp rate for NEO 550
 	m_pIntakeMotor1->SetOpenLoopRampRate(0.500);
@@ -91,11 +87,11 @@ void CIntake::ToggleIntake()
 ******************************************************************************/
 void CIntake::StopDeploy()
 {
-	int idleAmount = 0;
+	double idleAmount = 0;
 
 	// If the goal is up, then we want to set a bit of negative motion
-	if(m_bGoal) idleAmount = -0.05;
-	else idleAmount = 0.05;
+	if(m_bGoal) idleAmount = -0.01;
+	else idleAmount = 0.01;
 
 	m_pIntakeDeployMotorController1->Set(idleAmount);
 }
@@ -109,12 +105,12 @@ void CIntake::StartIntake(bool bSafe)
 {
 	if(bSafe) {
 		if (IsGoalPressed() && !m_bGoal) {
-			m_pIntakeMotor1->Set(-1.000);
+			m_pIntakeMotor1->Set(0.700);
 			m_bIntakeOn = true;
 		}
 	}
 	else {
-		m_pIntakeMotor1->Set(-1.000);
+		m_pIntakeMotor1->Set(0.700);
 		m_bIntakeOn = true;
 	}
 }

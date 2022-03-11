@@ -17,12 +17,21 @@ using namespace units;
 using namespace std;
 using namespace wpi;
 
-enum Paths {
+enum Paths : int {
 	eAutoStopped = 0,
 	eAutoIdle,
 	eTestPath,
+	
+	eDumbTaxi,
+	
+	eLessDumbTaxi1,
+	eLessDumbTaxi2,
+	eLessDumbTaxi3,
+	
 	eAdvancement1,
-	eAdvancement2
+	eAdvancement2,
+
+	eTerminator,
 };
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -33,12 +42,24 @@ public:
 	void SelectTrajectory(Trajectory Path);
 
 	// One-line methods.
-	Pose2d GetSelectedTrajectoryStartPoint()	{	return m_SelectedPath.InitialPose();		};
-	Trajectory GetSelectedTrajectory()			{	return m_SelectedPath;						};
-	double GetSelectedTrajectoryTotalTime()		{	return (double)m_SelectedPath.TotalTime();	};
+	Pose2d GetSelectedTrajectoryStartPoint()	{	return m_pSelectedPath->InitialPose();		};
+	Trajectory GetSelectedTrajectory()			{	return *m_pSelectedPath;						};
+	double GetSelectedTrajectoryTotalTime()		{	return (double)m_pSelectedPath->TotalTime();	};
+	static bool IsInShootingRange(double depth) {
+		
+		/*return (
+			(depth > (CTrajectoryConstants::m_dAutoShootingDistance - CTrajectoryConstants::m_dAutoShootingRange)) &&
+			(depth < (CTrajectoryConstants::m_dAutoShootingDistance + CTrajectoryConstants::m_dAutoShootingRange))
+		);*/
+		return false;
+	}
+
+	// Average shooting distance in mm
+	//const double m_dAutoShootingDistance = 5180;
+	//const double m_dAutoShootingRange = 600;
 
 private:
-	Trajectory m_SelectedPath;
+	Trajectory* m_pSelectedPath;
 };
 
 #endif

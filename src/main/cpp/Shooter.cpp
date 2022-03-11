@@ -18,6 +18,7 @@ CShooter::CShooter() {
 	m_pFlywheelMotor2		= new WPI_TalonFX(nFlywheelMotor2);
 
 	m_bSafety				= true;
+	m_bIdle					= true;
 }		
 
 /******************************************************************************
@@ -81,8 +82,8 @@ void CShooter::Init()
 	m_bShooterOn = false;
 	m_bShooterFullSpeed = false;
 
-	SmartDashboard::PutNumber("dExpectedShotVelocity", dExpectedShotVelocity);
-	SmartDashboard::PutNumber("dExpectedIdleVelocity", dExpectedIdleVelocity);
+	SmartDashboard::PutNumber("dExpectedShotVelocity", m_dExpectedShotVelocity);
+	SmartDashboard::PutNumber("dExpectedIdleVelocity", m_dExpectedIdleVelocity);
 }
 
 /******************************************************************************
@@ -94,16 +95,18 @@ void CShooter::StartFlywheelShot()
 {
 	if (!m_bSafety) 
 	{
-		m_pFlywheelMotor1->Set(ControlMode::Velocity, dExpectedShotVelocity);
+		m_pFlywheelMotor1->Set(ControlMode::Velocity, m_dExpectedShotVelocity);
 		m_bShooterOn = true;
+		m_bIdle = false;
 	}
-	else Stop();
+	else IdleStop();
 }
 
 void CShooter::IdleStop() {
 	if(!m_bSafety) {
-		m_pFlywheelMotor1->Set(ControlMode::Velocity, dExpectedIdleVelocity);
+		m_pFlywheelMotor1->Set(ControlMode::Velocity, m_dExpectedIdleVelocity);
 		m_bShooterOn = true;
+		m_bIdle = true;
 	}
 	else Stop();
 }
@@ -116,6 +119,25 @@ void CShooter::IdleStop() {
 void CShooter::Tick() {
 	double dMotor1Velocity = m_pFlywheelMotor1->GetSelectedSensorVelocity();
 	SmartDashboard::PutNumber("dMotor1Velocity", dMotor1Velocity);
-	double dVelocityDiff = abs(dMotor1Velocity - dExpectedShotVelocity);
+	double dVelocityDiff = abs(dMotor1Velocity - m_dExpectedShotVelocity);
 	m_bShooterFullSpeed = (dVelocityDiff < 100);
+}
+
+/******************************************************************************
+	Description:	A tick function that checks the speed of the flywheel to see if it is at full speed.
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CShooter::AdjustVelocity(double dVelocityPercent) {
+	m_dFlywheelMotorSpeed += dVelocityPercent;
+	m_dIdleMotorSpeed += dVelocityPercent;
+
+    m_dExpectedShotVelocity = m_dPeakSensorVelocity * m_dFlywheelMotorSpeed;
+    m_dExpectedIdleVelocity = m_dPeakSensorVelocity * m_dIdleMotorSpeed;
+
+	SmartDashboard::PutNumber("dExpectedShotVelocity", m_dExpectedShotVelocity);
+	SmartDashboard::PutNumber("dExpectedIdleVelocity", m_dExpectedIdleVelocity);
+
+	if(m_bIdle) m_pFlywheelMotor1->Set(ControlMode::Velocity, m_dExpectedIdleVelocity);
+	else m_pFlywheelMotor1->Set(ControlMode::Velocity, m_dExpectedShotVelocity);
 }

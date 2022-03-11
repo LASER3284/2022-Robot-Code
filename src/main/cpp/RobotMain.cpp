@@ -27,8 +27,7 @@ CRobotMain::CRobotMain()
 	m_pAuxController			= new Joystick(1);
 	m_pTimer					= new Timer();
 	m_pDrive					= new CDrive(m_pDriveController);
-	m_pAutoChooser				= new SendableChooser<string>();
-	//m_pLift 					= new CLift();
+	m_pAutoChooser				= new SendableChooser<Paths>();
 	m_pFrontIntake				= new CIntake(nIntakeMotor1, 0, 1, nIntakeDeployMotor1, true);
 	m_pBackIntake				= new CIntake(nIntakeMotor2, 2, 3, nIntakeDeployMotor2, false);
 	m_pShooter					= new CShooter();
@@ -78,10 +77,16 @@ void CRobotMain::RobotInit()
 	m_pTransfer->Init();
 
 	// Setup autonomous chooser.
-	m_pAutoChooser->SetDefaultOption("Autonomous Idle", "Autonomous Idle");
-	m_pAutoChooser->AddOption("Advancement", "Advancement");
-	m_pAutoChooser->AddOption("Test Path", "Test Path");
+	m_pAutoChooser->SetDefaultOption("Autonomous Idle", eAutoIdle);
+	m_pAutoChooser->AddOption("Advancement", eAdvancement1);
+	m_pAutoChooser->AddOption("Test Path", eTestPath);
+	m_pAutoChooser->AddOption("Dumb Taxi", eDumbTaxi);
+	m_pAutoChooser->AddOption("Less Dumb Taxi", eLessDumbTaxi1);
+	m_pAutoChooser->AddOption("YOLO Terminator", eTerminator);
 	SmartDashboard::PutData(m_pAutoChooser);
+
+	SmartDashboard::PutBoolean("bTeleopVision", false);
+
 	m_pTimer->Start();
 }
 
@@ -93,6 +98,13 @@ void CRobotMain::RobotInit()
 void CRobotMain::RobotPeriodic()
 {
 	m_pShooter->Tick();
+
+	// Tick the transfer system
+	m_pTransfer->UpdateLocations();
+	
+	SmartDashboard::PutBoolean("Vertical Transfer Infrared", m_pTransfer->m_aBallLocations[0]);
+	SmartDashboard::PutBoolean("Front Transfer Infrared", m_pTransfer->m_aBallLocations[1]);
+	SmartDashboard::PutBoolean("Back Transfer Infrared", m_pTransfer->m_aBallLocations[2]);
 }
 
 /******************************************************************************
@@ -104,27 +116,20 @@ void CRobotMain::AutonomousInit()
 {
 	// Init Drive and disable joystick
 	m_pDrive->Init();
+	m_pDrive->SetDriveSafety(false);
 	m_pDrive->SetJoystickControl(false);
-
-	// TODO: deploy intake for all of auto period
 
 	// Record start time
 	m_dStartTime = (double)m_pTimer->Get();
 
-	// Get selected option and switch m_nPathState based on that
-	m_strAutoSelected = m_pAutoChooser->GetSelected();
-	m_nAutoState = eAutoIdle;
-	if (m_strAutoSelected == "Advancement")
-	{
-		m_nAutoState = eAdvancement1;
+	// Get selected option and sw	itch m_nAutoState based on that
+	m_nAutoState = m_pAutoChooser->GetSelected();
+	if(m_nAutoState != eDumbTaxi || m_nAutoState != eLessDumbTaxi1)
+		m_pDrive->SetTrajectory(m_nAutoState);
+	if(m_nAutoState == eTerminator) {
+		m_pFrontIntake->ToggleIntake();
+		m_pBackIntake->ToggleIntake();
 	}
-	if (m_strAutoSelected == "Test Path")
-	{
-		m_nAutoState = eTestPath;
-	}
-	
-	// Set selected trajectory
-	m_pDrive->SetTrajectory(m_nAutoState);
 }
 
 /******************************************************************************
@@ -151,6 +156,7 @@ void CRobotMain::AutonomousPeriodic()
 					break;
 				case eTestPath:
 					m_nAutoState = eAutoStopped;
+					break;
 				default:
 					m_nAutoState = eAutoIdle;
 					break;
@@ -166,6 +172,169 @@ void CRobotMain::AutonomousPeriodic()
 				m_nAutoState = eAutoIdle;
 			}
 			break;
+
+		// Dumb Taxi
+		case eDumbTaxi:
+			if( ((double)m_pTimer->Get() - m_dStartTime) < 1.250) 
+				m_pDrive->SetDriveSpeeds(-6.000, -6.000);
+			else 
+				m_nAutoState = eAutoStopped;
+			break;
+
+		// Less Dumb Taxi
+		#pragma region Less Dumb Taxi
+		case eLessDumbTaxi1:
+			if( ((double)m_pTimer->Get() - m_dStartTime) < 0.750) {
+				// Drop the intake down and then start it.
+				m_pBackIntake->ToggleIntake();
+				m_pBackIntake->StartIntake();
+				// Drive backwards for a bit
+				m_pDrive->SetDriveSpeeds(-6.000, -6.000);
+				
+				// Start/Stop the back transfer depending on if we've picked up the ball already.
+				if(!m_pTransfer->m_aBallLocations[2]) m_pTransfer->StartBack();
+				else m_pTransfer->StopBack();
+			}
+			else {
+				m_nPreviousState = eLessDumbTaxi1;
+				m_nAutoState = eLessDumbTaxi2;
+				// Stop the intake to avoid picking up more than 2 balls
+				m_pBackIntake->StopIntake();
+			}
+			break;
+		case eLessDumbTaxi2:
+			if( ((double)m_pTimer->Get() - m_dStartTime) < 1.750) {
+				// Drive backwards more
+				m_pDrive->SetDriveSpeeds(-6.000, -6.000);
+			}
+			else {
+				m_nPreviousState = eLessDumbTaxi2;
+				m_nAutoState = eLessDumbTaxi3;
+			}
+			break;
+		case eLessDumbTaxi3:
+			if(!m_pShooter->m_bShooterFullSpeed && m_pTransfer->m_aBallLocations[0]) {
+				// Start the flywheel since the shooter isn't full speed yet.
+				m_pShooter->StartFlywheelShot();
+				// Lock the infrared ball sensor because of bouncing issues.
+				m_pTransfer->m_bBallLocked = true;
+			}
+			// The flywheel has spun up to full speed, now we start the vertical transfer to feed the ball in.
+			if(m_pShooter->m_bShooterFullSpeed) {
+				m_pTransfer->StartVerticalShot();
+				m_pTransfer->m_bBallLocked = false;
+				if (!m_pTransfer->m_aBallLocations[0]) {
+					// Spin the vertical transfer to "full" speed just to make sure the back ball is ready.
+					m_pTransfer->StartVerticalShot();
+					// We need to feed the balls in the horizontal into the vertical and let them sit there.
+					m_pTransfer->StartBack();
+				}
+			}
+			// We don't have any balls in the robot, time to stop the autonomous.
+			if(!m_pTransfer->m_aBallLocations[0] && !m_pTransfer->m_aBallLocations[2]) {
+				m_nAutoState = eAutoStopped;
+			}
+			break;
+		#pragma endregion
+	
+		#pragma region YOLO Terminator
+		case eTerminator:
+			// Deploy the intakes (similar logic to Teleop)
+			if (m_pFrontIntake->IsGoalPressed())
+			{
+				if (!m_pFrontIntake->m_bGoal) m_pFrontIntake->StartIntake();
+				else m_pFrontIntake->StopIntake();
+				
+				m_pFrontIntake->StopDeploy();
+				m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
+			}
+
+			if (m_pBackIntake->IsGoalPressed())
+			{
+				if (!m_pBackIntake->m_bGoal) m_pBackIntake->StartIntake();
+				else m_pBackIntake->StopIntake();
+				
+				m_pBackIntake->StopDeploy();
+				m_pBackIntake->m_bGoal = !m_pBackIntake->m_bGoal;
+			}
+			/*
+			// Get the vision packet from the coprocessor.
+			CVisionPacket* pVisionPacket = CVisionPacket::GetReceivedPacket();
+			if(pVisionPacket != nullptr) {
+				if(m_pPrevVisionPacket->m_nRandVal != pVisionPacket->m_nRandVal) {
+					pVisionPacket->ParseDetections();
+					DetectionClass kDetectClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eBlueCargo : eRedCargo);
+					DetectionClass kIgnoreClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eRedCargo  : eBlueCargo);
+					
+					// Get the amount of balls inside the robot
+					int iBallCount = 0;
+					for(int i = 0; i < 3; i++) {
+						if(m_pTransfer->m_aBallLocations[i]) iBallCount += 1;
+					}
+					bool bBallHunting = false;
+					for(int i = 0; i < pVisionPacket->m_nDetectionCount; i++) {
+						CVisionPacket::sObjectDetection* pObjDetection = pVisionPacket->m_pDetections[i];
+						
+						// Go ball hunting if we don't have 2 balls.
+						if(iBallCount < 2) {
+							// Check if we detected any balls (luckily the detection information is sorted by depth on the Pi)
+							if(pObjDetection->m_kClass == kDetectClass) {
+								double dTheta = (pObjDetection->m_nX - 160) * dAnglePerPixel;
+								const double dHalfWidthAngle = (pObjDetection->m_nWidth / 2) * dAnglePerPixel;
+
+								// Go forward and head towards the ball
+								if (-dHalfWidthAngle < dTheta && dTheta < dHalfWidthAngle) {
+									if(pVisionPacket->m_kDetectionLocation == DetectionLocation::eFrontCamera) 
+										m_pDrive->SetDriveSpeeds(6.000, 6.000); 
+									else if(pVisionPacket->m_kDetectionLocation == DetectionLocation::eBackCamera)
+										m_pDrive->SetDriveSpeeds(-6.000, -6.000);
+								}
+								// Turn to center the detected object
+								else {
+									dTheta = dTheta * (pVisionPacket->m_kDetectionLocation == DetectionLocation::eFrontCamera ? 1 : -1);
+									m_pDrive->TurnByAngle(dTheta);
+								}
+								bBallHunting = true;
+								break;
+							}
+						}
+						else if(iBallCount >= 2) {
+							// Stop the drive
+							m_pDrive->SetDriveSpeeds(0.000, 0.000);
+
+							// We've grabbed atleast 2 balls, now lets try and shoot them...
+							if(pObjDetection->m_kClass == DetectionClass::eHub) {
+								// TODO: Drive odometry to determine the side we are on of the hub.
+								const units::degree_t driveRotation = m_pDrive->m_pOdometry->GetPose().Rotation().Degrees();
+								
+								// We're in range
+								if(CTrajectoryConstants::IsInShootingRange(pObjDetection->m_nDepth)) {
+
+								}
+								// Move closer to the hub
+								else if(pObjDetection->m_nDepth < (CTrajectoryConstants::m_dAutoShootingDistance - CTrajectoryConstants::m_dAutoShootingRange)) {
+									if(pVisionPacket->m_kDetectionLocation == DetectionLocation::eFrontCamera) m_pDrive->SetDriveSpeeds(6.000, 6.000); 
+									else if(pVisionPacket->m_kDetectionLocation == DetectionLocation::eBackCamera) m_pDrive->SetDriveSpeeds(-6.000, -6.000);
+								}
+								// Move farther from the hub
+								else if(pObjDetection->m_nDepth > (CTrajectoryConstants::m_dAutoShootingDistance + CTrajectoryConstants::m_dAutoShootingRange)) {
+									if(pVisionPacket->m_kDetectionLocation == DetectionLocation::eFrontCamera) m_pDrive->SetDriveSpeeds(-6.000, -6.000); 
+									else if(pVisionPacket->m_kDetectionLocation == DetectionLocation::eBackCamera) m_pDrive->SetDriveSpeeds(6.000, 6.000);
+								}
+							}
+						}
+					}
+
+					// We aren't on the hunt for a ball *AND* we don't have 2 balls in yet.
+					// This means there's not a ball
+					if(iBallCount < 2 && !bBallHunting) {
+						// Spin 90deg in order to hopefully try and find a ball in either of the directions.
+						m_pDrive->TurnByAngle(90);
+					}
+				}
+			}*/
+			break;
+		#pragma endregion
 	}
 }
 
@@ -182,8 +351,7 @@ void CRobotMain::TeleopInit()
 	m_pBackIntake->Init();
 	m_pShooter->SetSafety(false);
 	m_pShooter->Init();
-	m_pShooter->IdleStop();
-	m_pPrevVisionPacket = new CVisionPacket();
+	m_pShooter->StartFlywheelShot();
 	m_pTransfer->Init();
 }
 
@@ -249,11 +417,9 @@ void CRobotMain::TeleopPeriodic()
 		m_pBackIntake->m_bGoal = !m_pBackIntake->m_bGoal;
 	}
 	
-	// Manually tick transfer system
-	m_pTransfer->UpdateLocations();
 
 	// We need to do some jankiness in order to lock the value of the vertical transfer sensor for shooting...
-	if(!m_pShooter->m_bShooterFullSpeed && m_pTransfer->m_aBallLocations[0]) {
+	if(m_pTransfer->m_aBallLocations[0]) {
 		m_pTransfer->m_bBallLocked = true;
 	}
 
@@ -261,25 +427,6 @@ void CRobotMain::TeleopPeriodic()
 	if ( ( m_pFrontIntake->m_bIntakeOn || m_pBackIntake->m_bIntakeOn ) && !m_pTransfer->m_aBallLocations[0]) {
 		m_pTransfer->StartFront();
 		m_pTransfer->StartBack();
-	}
-
-	// If we don't have a ball in the vertical transfer, start it
-	if (!m_pTransfer->m_aBallLocations[0]) {
-		m_pTransfer->StartVertical();
-		// We need to feed the balls in the horizontal into the vertical and let them sit there.
-		if(iBallCount >= 1) {
-			m_pTransfer->StartFront();
-			m_pTransfer->StartBack();
-		}
-	}
-	// If the shooter isn't on and we have a ball in the transfer, stop the vertical to try and stop the ball in it.
-	else if(!m_pShooter->m_bShooterFullSpeed) {
-		m_pTransfer->StopVertical();
-	}
-	// If the shooter IS on and we have a ball in the transfer, start the vertical transfer to send it to the flywheel.
-	else if(m_pShooter->m_bShooterFullSpeed) {
-		m_pTransfer->StartVerticalShot();
-		m_pTransfer->m_bBallLocked = false;
 	}
 
 	// If we have more than two balls at a time, we need to stop the intakes that we're running AND transfers to avoid shuffling the balls.
@@ -299,21 +446,56 @@ void CRobotMain::TeleopPeriodic()
 		m_pTransfer->StopBack();
 	}
 
-	// Toggle on and off the flywheel with A and B respectively.
-	if (m_pAuxController->GetRawButtonPressed(eButtonA) && !m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->StartFlywheelShot();
-	if (m_pAuxController->GetRawButtonPressed(eButtonB) && m_pAuxController->GetRawButtonReleased(eButtonA)) m_pShooter->IdleStop();
+	// Send balls into the flywheel with the trigger (even if we don't technically have a ball in the vertical)
+	if (m_pAuxController->GetRawAxis(eRightTrigger) >= 0.95) {
+		m_pTransfer->StartVerticalShot();
+		m_pTransfer->m_bBallLocked = false;
+	}
+	// If a ball is in the vertical and RT isn't fully pressed, stop the vertical transfer
+	else if(m_pTransfer->m_aBallLocations[0]) {
+		m_pTransfer->StopVertical();
+	}
+	else if(!m_pTransfer->m_aBallLocations[0]) {
+		m_pTransfer->StartVertical();
+		// We need to feed the balls in the horizontal into the vertical and let them sit there.
+		if(iBallCount >= 1) {
+			m_pTransfer->StartFront();
+			m_pTransfer->StartBack();
+		}
+	}
+
+	// Adjust the velocity of the flywheel with the DPad up/down.
+	if (m_pAuxController->GetPOV() == 0) m_pShooter->AdjustVelocity(0.001);
+	if (m_pAuxController->GetPOV() == 180) m_pShooter->AdjustVelocity(-0.001);
 
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings
 	**************************************************************************/
-	// TODO: Implement vision into Teleop
-
-
-	// Infrared updates
-	SmartDashboard::PutBoolean("Vertical Transfer Infrared", m_pTransfer->m_aBallLocations[0]);
-	SmartDashboard::PutBoolean("Front Transfer Infrared", m_pTransfer->m_aBallLocations[1]);
-	SmartDashboard::PutBoolean("Back Transfer Infrared", m_pTransfer->m_aBallLocations[2]);
-	SmartDashboard::PutNumber("iBallCount", iBallCount);
+	
+	// Add a toggle for vision in teleop just to be safe.
+	if(SmartDashboard::GetBoolean("bTeleopVision", false)) {
+		CVisionPacket* pVisionPacket = CVisionPacket::GetReceivedPacket();
+		if(pVisionPacket != nullptr) {
+			if(m_pPrevVisionPacket->m_nRandVal != pVisionPacket->m_nRandVal) {
+				pVisionPacket->ParseDetections();
+				for(int i = 0; i < pVisionPacket->m_nDetectionCount; i++) {
+					CVisionPacket::sObjectDetection* pObjDetection = pVisionPacket->m_pDetections[i];
+					
+					// For vision in teleop, we can try fine adjustments to the robot's angle to the hub...
+					if(pObjDetection->m_kClass == eHub) {
+						const double dTheta = (pObjDetection->m_nX - 160) * dAnglePerPixel;
+						const double dHalfWidthAngle = (pObjDetection->m_nWidth / 2) * dAnglePerPixel;
+						
+						// Turn by however much we need to center the shooter (camera, really) onto the hub.
+						if(m_pShooter->m_bShooterFullSpeed && (-dHalfWidthAngle > dTheta || dTheta > dHalfWidthAngle)) {
+							m_pDrive->TurnByAngle(dTheta);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 /******************************************************************************
@@ -359,13 +541,20 @@ void CRobotMain::TestPeriodic()
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings
 	**************************************************************************/
+	CVisionPacket* pVisionPacket = CVisionPacket::GetReceivedPacket();
+	if(pVisionPacket != nullptr) {
+		if(m_pPrevVisionPacket->m_nRandVal != pVisionPacket->m_nRandVal) {
+			pVisionPacket->ParseDetections();
+			// DetectionClass kBallClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eBlueCargo : eRedCargo);
+		}
+		else m_pDrive->Tick();
+	}
+	else m_pDrive->Tick();
 
-	// Retrive the processed vision packet from our coprocessor.
-	string processed_vision = SmartDashboard::GetRaw("processed_vision", "");
-		
+	/*
 	// If the processed_vision is empty, then the vision code isn't running (?);
 	// Button A on drive controller must also have been pressed
-	if (!processed_vision.empty() /*&& m_pDriveController->GetRawButtonPressed(eButtonA)*/)
+	if (!processed_vision.empty() && m_pDriveController->GetRawButtonPressed(eButtonA))
 	{
 		const char* pVisionPacketArr = processed_vision.c_str();
 		CVisionPacket* pVisionPacket = new CVisionPacket(pVisionPacketArr, processed_vision.length());
@@ -404,6 +593,7 @@ void CRobotMain::TestPeriodic()
 		else m_pDrive->Tick();
 	}
 	else m_pDrive->Tick();
+	*/
 }
 
 #ifndef RUNNING_FRC_TESTS

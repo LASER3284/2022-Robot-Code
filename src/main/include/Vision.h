@@ -28,9 +28,10 @@ public:
     CVisionPacket(const char* pPacketArr, unsigned int length);
     ~CVisionPacket();
     void ParseDetections();
-    
-    char m_nRandVal = 0xFF;
-    char m_nDetectionCount = 0xFF;
+    static CVisionPacket* GetReceivedPacket();
+
+    unsigned char m_nRandVal = 0xFF;
+    unsigned char m_nDetectionCount = 0xFF;
     DetectionLocation m_kDetectionLocation = DetectionLocation::eNONE;
 
     // Force the compiler to pack tightly in order to properly deserialize this

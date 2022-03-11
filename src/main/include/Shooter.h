@@ -18,17 +18,6 @@ using namespace rev;
 using namespace units;
 using namespace ctre::phoenix::motorcontrol;
 
-// Normal Speed: 0.700
-const double dFlywheelMotorSpeed = -0.755;
-const double dIdleMotorSpeed = -0.500;
-
-
-// Calculate the expect peak sensor velocity (sensor units per 100ms) as:
-// (kMaxRPM / 600) * (kSensorUnitsPerRotation / kGearRatio)
-const double dPeakSensorVelocity = (6380 / 600) * (2048 / 1); 
-const double dExpectedShotVelocity = dPeakSensorVelocity * dFlywheelMotorSpeed;
-const double dExpectedIdleVelocity = dPeakSensorVelocity * dIdleMotorSpeed;
-
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -48,20 +37,32 @@ public:
     void IdleStop();
 	void Stop();
     void SetSafety(bool bSafety);
+    void AdjustVelocity(double dVelocityPercent);
 
     bool m_bShooterOn;
     bool m_bShooterFullSpeed;
+
+    // Normal Speed: 0.700
+    double m_dFlywheelMotorSpeed = 0.525;
+    double m_dIdleMotorSpeed = 0.500;
 private:
     // Declare class objects and variables.
     WPI_TalonFX*      m_pFlywheelMotor1;
     WPI_TalonFX*      m_pFlywheelMotor2;
 
     bool m_bSafety;
-
+    bool m_bIdle;
     double m_dPropotional = 2.51;
     double m_dIntegral = 1e-5;
     double m_dDerivative = 0.0011;
     double m_dFeedForward = 0.0465;
+
+
+    // Calculate the expect peak sensor velocity (sensor units per 100ms) as:
+    // (kMaxRPM / 600) * (kSensorUnitsPerRotation / kGearRatio)
+    const double m_dPeakSensorVelocity = (6380 / 600) * (2048 / 1); 
+    double m_dExpectedShotVelocity = m_dPeakSensorVelocity * m_dFlywheelMotorSpeed;
+    double m_dExpectedIdleVelocity = m_dPeakSensorVelocity * m_dIdleMotorSpeed;
 };
 ///////////////////////////////////////////////////////////////////////////////
 
