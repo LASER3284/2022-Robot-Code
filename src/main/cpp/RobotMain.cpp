@@ -332,7 +332,8 @@ void CRobotMain::AutonomousPeriodic()
 						m_pDrive->TurnByAngle(90);
 					}
 				}
-			}*/
+			}
+			*/
 			break;
 		#pragma endregion
 	}
@@ -387,12 +388,22 @@ void CRobotMain::TeleopPeriodic()
 		if(m_pTransfer->m_aBallLocations[i]) iBallCount += 1;
 	}
 
-	if (!m_pFrontIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonLB))
-	{
-		// Stop the intake just to be safe (:
-		m_pFrontIntake->StopIntake();
-		m_pFrontIntake->ToggleIntake();
+	if(m_pDriveController->GetRawButtonPressed(eButtonLB)) {
+		// If the intake isn't down, move the intake down
+		if(!m_pFrontIntake->GetLimitSwitchState(false)) {
+			m_pFrontIntake->DeployIntake(false);
+			m_pFrontIntake->m_bGoal = false;
+		}
 	}
+	else if(m_pDriveController->GetRawButtonReleased(eButtonLB)) {
+		// If the intake isn't up, move the intake up
+		if(!m_pFrontIntake->GetLimitSwitchState(true)) {
+			m_pFrontIntake->StopIntake();
+			m_pFrontIntake->DeployIntake(true);
+			m_pFrontIntake->m_bGoal = true;
+		}
+	}
+	// When we've hit our goal, stop the motors (or start the intake in case of going down)
 	if (m_pFrontIntake->IsGoalPressed())
 	{
 		if (!m_pFrontIntake->m_bGoal) m_pFrontIntake->StartIntake();
@@ -402,12 +413,23 @@ void CRobotMain::TeleopPeriodic()
 		m_pFrontIntake->m_bGoal = !m_pFrontIntake->m_bGoal;
 	}
 
-	if (!m_pBackIntake->IsGoalPressed() && m_pDriveController->GetRawButtonPressed(eButtonRB))
-	{
-		// Stop the intake just to be safe (:
-		m_pBackIntake->StopIntake();
-		m_pBackIntake->ToggleIntake();
+	if(m_pDriveController->GetRawButtonPressed(eButtonRB)) {
+		// If the intake isn't down, move the intake down
+		if(!m_pBackIntake->GetLimitSwitchState(false)) {
+			m_pBackIntake->DeployIntake(false);
+			m_pBackIntake->m_bGoal = false;
+		}
 	}
+	else if(m_pDriveController->GetRawButtonReleased(eButtonRB)) {
+		// If the intake isn't up, move the intake up
+		if(!m_pBackIntake->GetLimitSwitchState(true)) {
+			m_pBackIntake->StopIntake();
+			m_pBackIntake->DeployIntake(true);
+			m_pBackIntake->m_bGoal = true;
+		}
+	}
+
+	// When we've hit our goal, stop the motors (or start the intake in case of going down)
 	if (m_pBackIntake->IsGoalPressed())
 	{
 		if (!m_pBackIntake->m_bGoal) m_pBackIntake->StartIntake();

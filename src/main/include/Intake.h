@@ -31,8 +31,10 @@ public:
 	bool IsGoalPressed();
 	void ToggleIntake();
 	void StopDeploy();
-	void StartIntake(bool bSafe = true);
+	void DeployIntake(bool bUp);
 	void StopIntake();
+	void StartIntake(bool bSafe = true);
+	bool GetLimitSwitchState(bool bUp);
 
 	// Public members
 	bool m_bGoal;		// If true, up; else, down

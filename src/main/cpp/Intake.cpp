@@ -66,7 +66,7 @@ void CIntake::Init()
 bool CIntake::IsGoalPressed()
 {
 	if (m_bGoal)	{	return !m_pLimitSwitchUp->Get();	}
-	else			{	return !m_pLimitSwitchDown->Get();	}	// Inverted to make it work, idk why it does
+	else			{	return !m_pLimitSwitchDown->Get();	}
 }
 
 /******************************************************************************
@@ -103,13 +103,7 @@ void CIntake::StopDeploy()
 ******************************************************************************/
 void CIntake::StartIntake(bool bSafe)
 {
-	if(bSafe) {
-		if (IsGoalPressed() && !m_bGoal) {
-			m_pIntakeMotor1->Set(0.700);
-			m_bIntakeOn = true;
-		}
-	}
-	else {
+	if (IsGoalPressed() && !m_bGoal) {
 		m_pIntakeMotor1->Set(0.700);
 		m_bIntakeOn = true;
 	}
@@ -124,4 +118,24 @@ void CIntake::StopIntake()
 {
 	m_pIntakeMotor1->Set(0.000);
 	m_bIntakeOn = false;
+}
+
+/******************************************************************************
+	Description:	Moves the intake up/down based off of the bUp argument.
+	Arguments:		bUp (True: up limit switch; False: down limit switch)
+	Returns:		Nothing
+******************************************************************************/
+void CIntake::MoveIntake(bool bUp) {
+	if(bUp) m_pIntakeDeployMotorController1->Set(-0.350);
+	else    m_pIntakeDeployMotorController1->Set(0.350);
+}
+
+/******************************************************************************
+	Description:	Gets the state of the respective limit switches
+	Arguments:		bUp (True: up limit switch; False: down limit switch)
+	Returns:		Nothing
+******************************************************************************/
+bool CIntake::GetLimitSwitchState(bool bUp) {
+	if(bUp) !m_pLimitSwitchUp->Get();
+	else    !m_pLimitSwitchDown->Get();
 }
