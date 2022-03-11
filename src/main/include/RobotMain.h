@@ -47,7 +47,7 @@ private:
 		eTeleopFiring
 	};
 
-	SendableChooser<std::string>*		m_pAutoChooser;
+	SendableChooser<Paths>*				m_pAutoChooser;
 	std::string							m_strAutoSelected;
 	Joystick*							m_pDriveController;
 	Joystick*							m_pAuxController;

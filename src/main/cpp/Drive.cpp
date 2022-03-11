@@ -94,7 +94,6 @@ void CDrive::Tick()
 	if (m_bJoystickControl)
 	{
 		// Set variables to joystick values.
-		// NOTE: JOYSTICK ASSIGNMENTS WRONG, INVERSION NEEDS TO BE IMPLEMENTED
 		double dXAxis = m_pDriveController->GetRawAxis(eRightAxisX);
 		double dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY);
 

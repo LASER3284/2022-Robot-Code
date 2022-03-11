@@ -10,6 +10,7 @@
 #include <frc/DriverStation.h>
 
 using namespace frc;
+using namespace std;
 ///////////////////////////////////////////////////////////////////////////////
 
 CVisionPacket::CVisionPacket(const char* pPacketArr, unsigned int length)
@@ -22,6 +23,7 @@ CVisionPacket::CVisionPacket(const char* pPacketArr, unsigned int length)
 	// Read in the actual data from the packet.
 	m_nRandVal = m_pRawPacket[0];
 	m_nDetectionCount = m_pRawPacket[1];
+	m_kDetectionLocation = (DetectionLocation)m_pRawPacket[2];
 }
 
 CVisionPacket::CVisionPacket()
@@ -36,6 +38,22 @@ CVisionPacket::CVisionPacket()
 CVisionPacket::~CVisionPacket()
 {
 	free(m_pRawPacket);
+}
+
+CVisionPacket* CVisionPacket::GetReceivedPacket() {
+	// Retrive the processed vision packet from our coprocessor.
+	string processed_vision = SmartDashboard::GetRaw("processed_vision", "");
+
+	if(!processed_vision.empty()) {
+		const char* pVisionPacketArr = processed_vision.c_str();
+		CVisionPacket* pVisionPacket = new CVisionPacket(pVisionPacketArr, processed_vision.length());
+
+		if(pVisionPacket->m_nRandVal != 0xFF) {
+			return pVisionPacket;
+		}
+	}
+
+	return nullptr;
 }
 
 void CVisionPacket::ParseDetections()

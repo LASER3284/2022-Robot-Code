@@ -71,6 +71,8 @@ public:
 	void GoForwardUntuned();				// NOTE: this is untuned and shouldn't be used in non-beta versions
 	void TurnByAngle(double dTheta);
 
+	DifferentialDriveOdometry*				m_pOdometry;
+
 private:
 	// Declare class objects and variables.
 	bool									m_bJoystickControl;
@@ -83,7 +85,6 @@ private:
 	DifferentialDrive*						m_pRobotDrive;
 	Timer*									m_pTimer;
 	CTrajectoryConstants*					m_pTrajectoryConstants;
-	DifferentialDriveOdometry*				m_pOdometry;
 	RamseteCommand*							m_pRamseteCommand;
 	Trajectory								m_Trajectory;
 };
