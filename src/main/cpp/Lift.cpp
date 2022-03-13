@@ -14,8 +14,7 @@
 ******************************************************************************/
 CLift::CLift()
 {
-	m_pLiftMotor1 		= new WPI_TalonFX(nLiftMotor1);
-	m_pLiftMotor2 		= new WPI_TalonFX(nLiftMotor2);
+
 }
 
 /******************************************************************************
@@ -25,9 +24,5 @@ CLift::CLift()
 ******************************************************************************/
 CLift::~CLift()
 {
-	delete m_pLiftMotor1;
-	delete m_pLiftMotor2;
-	
-	m_pLiftMotor1		= nullptr;
-	m_pLiftMotor2		= nullptr;
+
 }

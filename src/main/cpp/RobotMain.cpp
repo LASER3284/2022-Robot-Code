@@ -81,7 +81,8 @@ void CRobotMain::RobotInit()
 	m_pAutoChooser->AddOption("Advancement", eAdvancement1);
 	m_pAutoChooser->AddOption("Test Path", eTestPath);
 	m_pAutoChooser->AddOption("Dumb Taxi", eDumbTaxi);
-	m_pAutoChooser->AddOption("Less Dumb Taxi", eLessDumbTaxi1);
+	m_pAutoChooser->AddOption("Taxi Shot", eTaxiShot);
+	// m_pAutoChooser->AddOption("Less Dumb Taxi", eLessDumbTaxi1);
 	m_pAutoChooser->AddOption("YOLO Terminator", eTerminator);
 	SmartDashboard::PutData(m_pAutoChooser);
 
@@ -97,14 +98,21 @@ void CRobotMain::RobotInit()
 ******************************************************************************/
 void CRobotMain::RobotPeriodic()
 {
+	// Tick the shooter
 	m_pShooter->Tick();
 
 	// Tick the transfer system
 	m_pTransfer->UpdateLocations();
-	
+
+	// Update SmartDashboard for easy checking.
 	SmartDashboard::PutBoolean("Vertical Transfer Infrared", m_pTransfer->m_aBallLocations[0]);
 	SmartDashboard::PutBoolean("Front Transfer Infrared", m_pTransfer->m_aBallLocations[1]);
 	SmartDashboard::PutBoolean("Back Transfer Infrared", m_pTransfer->m_aBallLocations[2]);
+	
+	SmartDashboard::PutBoolean("Back-Down Limit Switch", m_pBackIntake->GetLimitSwitchState(false));
+	SmartDashboard::PutBoolean("Back-Up Limit Switch", m_pBackIntake->GetLimitSwitchState(true));
+	SmartDashboard::PutBoolean("Front-Down Limit Switch", m_pFrontIntake->GetLimitSwitchState(false));
+	SmartDashboard::PutBoolean("Front-Up Limit Switch", m_pFrontIntake->GetLimitSwitchState(true));
 }
 
 /******************************************************************************
@@ -120,12 +128,12 @@ void CRobotMain::AutonomousInit()
 	m_pDrive->SetJoystickControl(false);
 
 	// Record start time
-	m_dStartTime = (double)m_pTimer->Get();
+	m_dStartTime = -1;
 
-	// Get selected option and sw	itch m_nAutoState based on that
+	// Get selected option and switch m_nAutoState based on that
 	m_nAutoState = m_pAutoChooser->GetSelected();
-	if(m_nAutoState != eDumbTaxi || m_nAutoState != eLessDumbTaxi1)
-		m_pDrive->SetTrajectory(m_nAutoState);
+	m_pDrive->SetTrajectory(m_nAutoState);
+	
 	if(m_nAutoState == eTerminator) {
 		m_pFrontIntake->ToggleIntake();
 		m_pBackIntake->ToggleIntake();
@@ -175,12 +183,42 @@ void CRobotMain::AutonomousPeriodic()
 
 		// Dumb Taxi
 		case eDumbTaxi:
+			if(m_dStartTime < 0) m_dStartTime = (double)m_pTimer->Get();
+			
 			if( ((double)m_pTimer->Get() - m_dStartTime) < 1.250) 
 				m_pDrive->SetDriveSpeeds(-6.000, -6.000);
 			else 
 				m_nAutoState = eAutoStopped;
 			break;
 
+		case eTaxiShot:
+			if(m_dStartTime < 0) {
+				m_dStartTime = (double)m_pTimer->Get();
+				// Lock the ball in the vertical to start
+				m_pTransfer->m_bBallLocked = true;
+			}
+			// Drive backwards for 1.25s
+			if( ((double)m_pTimer->Get() - m_dStartTime) < 1.250) {
+				m_pDrive->SetDriveSpeeds(-6.000, -6.000);
+			}
+			// Rev up the shooter for shooting
+			else {
+				m_pDrive->ForceStop();
+				
+				m_pShooter->StartFlywheelShot();
+				// If we don't have a ball in the vertical anymore, shut off the shooter.
+				if(!m_pTransfer->m_bBallLocked && !m_pTransfer->m_aBallLocations[0]) {
+					m_pShooter->IdleStop();
+					m_pTransfer->StopVertical();
+					m_nAutoState = eAutoStopped;
+				}
+				// If the shooter is at full speed, start our vertical shot.
+				if(m_pShooter->m_bShooterFullSpeed) {
+					m_pTransfer->StartVerticalShot();
+					m_pTransfer->m_bBallLocked = false;
+				}
+			}
+			break;
 		// Less Dumb Taxi
 		#pragma region Less Dumb Taxi
 		case eLessDumbTaxi1:
@@ -391,7 +429,7 @@ void CRobotMain::TeleopPeriodic()
 	if(m_pDriveController->GetRawButtonPressed(eButtonLB)) {
 		// If the intake isn't down, move the intake down
 		if(!m_pFrontIntake->GetLimitSwitchState(false)) {
-			m_pFrontIntake->DeployIntake(false);
+			m_pFrontIntake->MoveIntake(false);
 			m_pFrontIntake->m_bGoal = false;
 		}
 	}
@@ -399,7 +437,7 @@ void CRobotMain::TeleopPeriodic()
 		// If the intake isn't up, move the intake up
 		if(!m_pFrontIntake->GetLimitSwitchState(true)) {
 			m_pFrontIntake->StopIntake();
-			m_pFrontIntake->DeployIntake(true);
+			m_pFrontIntake->MoveIntake(true);
 			m_pFrontIntake->m_bGoal = true;
 		}
 	}
@@ -416,7 +454,7 @@ void CRobotMain::TeleopPeriodic()
 	if(m_pDriveController->GetRawButtonPressed(eButtonRB)) {
 		// If the intake isn't down, move the intake down
 		if(!m_pBackIntake->GetLimitSwitchState(false)) {
-			m_pBackIntake->DeployIntake(false);
+			m_pBackIntake->MoveIntake(false);
 			m_pBackIntake->m_bGoal = false;
 		}
 	}
@@ -424,7 +462,7 @@ void CRobotMain::TeleopPeriodic()
 		// If the intake isn't up, move the intake up
 		if(!m_pBackIntake->GetLimitSwitchState(true)) {
 			m_pBackIntake->StopIntake();
-			m_pBackIntake->DeployIntake(true);
+			m_pBackIntake->MoveIntake(true);
 			m_pBackIntake->m_bGoal = true;
 		}
 	}
@@ -444,13 +482,13 @@ void CRobotMain::TeleopPeriodic()
 	if(m_pTransfer->m_aBallLocations[0]) {
 		m_pTransfer->m_bBallLocked = true;
 	}
-
+	
 	// If the front/back intake is on, and we don't have a ball in the vertical, start the front/back transfer
 	if ( ( m_pFrontIntake->m_bIntakeOn || m_pBackIntake->m_bIntakeOn ) && !m_pTransfer->m_aBallLocations[0]) {
 		m_pTransfer->StartFront();
 		m_pTransfer->StartBack();
 	}
-
+	
 	// If we have more than two balls at a time, we need to stop the intakes that we're running AND transfers to avoid shuffling the balls.
 	if( (m_pFrontIntake->m_bIntakeOn || m_pBackIntake->m_bIntakeOn) && iBallCount >= 2) {
 		// Stop either of the intakes

@@ -23,6 +23,7 @@ enum Paths : int {
 	eTestPath,
 	
 	eDumbTaxi,
+	eTaxiShot,
 	
 	eLessDumbTaxi1,
 	eLessDumbTaxi2,

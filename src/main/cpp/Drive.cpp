@@ -189,8 +189,11 @@ void CDrive::FollowTrajectory()
 	Arguments:		int nPath
 	Returns:		Nothing
 ******************************************************************************/
-void CDrive::SetTrajectory(int nPath)
+void CDrive::SetTrajectory(Paths nPath)
 {
+	// Taxi pathes doesn't need to set a trajectory, as it's all time based...
+	if(nPath == eDumbTaxi || nPath == eTaxiShot) return;
+
 	m_pTrajectoryConstants->SelectTrajectory(nPath);
 	m_Trajectory = m_pTrajectoryConstants->GetSelectedTrajectory();
 

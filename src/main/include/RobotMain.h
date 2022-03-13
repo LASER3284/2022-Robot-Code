@@ -61,7 +61,7 @@ private:
 	CTransfer*							m_pTransfer;
 
 	double	m_dStartTime;							// A double representing start time
-	int		m_nAutoState;							// Current Auto state
+	Paths	m_nAutoState;							// Current Auto state
 	int		m_nTeleopState;							// Current Teleop state
 	int		m_nPreviousState;						// Previous state
 };

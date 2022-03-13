@@ -62,7 +62,7 @@ public:
 	void ResetOdometry();
 	void SetJoystickControl(bool bJoystickControl);
 	void SetDriveSafety(bool bDriveSafety);
-	void SetTrajectory(int nPath);
+	void SetTrajectory(Paths nPath);
 	void FollowTrajectory();
 	DifferentialDriveWheelSpeeds GetWheelSpeeds();
 	void SetDrivePowers(volt_t dLeftVoltage, volt_t dRightVoltage);

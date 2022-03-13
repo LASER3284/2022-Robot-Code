@@ -27,7 +27,7 @@ CTransfer::CTransfer()
 	m_pBackInfrared		= new DigitalInput(nBackTransferInfrared);
 
 	m_pFrontDebouncer = new Debouncer {
-		150_ms,
+		80_ms,
 		Debouncer::DebounceType::kBoth
 	}; 
 	m_pBackDebouncer = new Debouncer {
@@ -35,7 +35,7 @@ CTransfer::CTransfer()
 		Debouncer::DebounceType::kBoth
 	};
 	m_pTopDebouncer = new Debouncer {
-		25_ms,
+		220_ms,
 		Debouncer::DebounceType::kBoth
 	};
 }
@@ -89,7 +89,7 @@ void CTransfer::Init()
 ******************************************************************************/
 void CTransfer::StartVertical()
 {
-	m_pTopMotor->Set(-0.250);
+	m_pTopMotor->Set(-0.225);
 }
 
 /******************************************************************************

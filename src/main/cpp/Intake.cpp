@@ -90,8 +90,8 @@ void CIntake::StopDeploy()
 	double idleAmount = 0;
 
 	// If the goal is up, then we want to set a bit of negative motion
-	if(m_bGoal) idleAmount = -0.01;
-	else idleAmount = 0.01;
+	if(m_bGoal) idleAmount = -0.05;
+	else idleAmount = 0.05;
 
 	m_pIntakeDeployMotorController1->Set(idleAmount);
 }
@@ -136,6 +136,6 @@ void CIntake::MoveIntake(bool bUp) {
 	Returns:		Nothing
 ******************************************************************************/
 bool CIntake::GetLimitSwitchState(bool bUp) {
-	if(bUp) !m_pLimitSwitchUp->Get();
-	else    !m_pLimitSwitchDown->Get();
+	if(bUp) return !m_pLimitSwitchUp->Get();
+	else    return !m_pLimitSwitchDown->Get();
 }

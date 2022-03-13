@@ -31,8 +31,8 @@ public:
 	bool IsGoalPressed();
 	void ToggleIntake();
 	void StopDeploy();
-	void DeployIntake(bool bUp);
 	void StopIntake();
+	void MoveIntake(bool bUp);
 	void StartIntake(bool bSafe = true);
 	bool GetLimitSwitchState(bool bUp);
 
