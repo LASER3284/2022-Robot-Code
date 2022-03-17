@@ -24,6 +24,8 @@ public:
 	// Declare class methods.
 	CLift();
 	~CLift();
+	void Init();
+	void MoveArms(double dJoystickPosition);
 
 private:
 	// Declare class objects and variables.

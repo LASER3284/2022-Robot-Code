@@ -85,7 +85,7 @@ void CDrive::Init()
 }
 
 /******************************************************************************
-    Description:	Tick function, ran every 20ms in CRobotMain::Tick()
+    Description:	Tick function, ran every 20ms in TeleopPeriodic
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
@@ -93,9 +93,17 @@ void CDrive::Tick()
 {
 	if (m_bJoystickControl)
 	{
-		// Set variables to joystick values.
-		double dXAxis = m_pDriveController->GetRawAxis(eRightAxisX);
-		double dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY);
+		double dXAxis;
+		double dYAxis;
+		if (m_pDriveController->GetRawAxis(eRightTrigger) >= 0.950) {
+			// If the right drive trigger is pressed all the way, then divide joystick inputs by 2.
+			dXAxis = m_pDriveController->GetRawAxis(eRightAxisX) / 2;
+			dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY) / 2;
+		} else {
+			// Else, set the normal joystick values.
+			dXAxis = m_pDriveController->GetRawAxis(eRightAxisX);
+			dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY);
+		}
 
 		// Check if joystick is in deadzone.
 		if (fabs(dXAxis) < dJoystickDeadzone)

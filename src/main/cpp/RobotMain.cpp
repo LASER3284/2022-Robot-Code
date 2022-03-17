@@ -28,6 +28,7 @@ CRobotMain::CRobotMain()
 	m_pTimer					= new Timer();
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<Paths>();
+	m_pLift						= new CLift();
 	m_pFrontIntake				= new CIntake(nIntakeMotor1, 0, 1, nIntakeDeployMotor1, true);
 	m_pBackIntake				= new CIntake(nIntakeMotor2, 2, 3, nIntakeDeployMotor2, false);
 	m_pShooter					= new CShooter();
@@ -49,6 +50,7 @@ CRobotMain::~CRobotMain()
 	delete m_pAuxController;
 	delete m_pDrive;
 	delete m_pTimer;
+	delete m_pLift;
 	delete m_pAutoChooser;
 	delete m_pFrontIntake;
 	delete m_pBackIntake;
@@ -59,6 +61,7 @@ CRobotMain::~CRobotMain()
 	m_pAuxController	= nullptr;
 	m_pDrive			= nullptr;
 	m_pTimer			= nullptr;
+	m_pLift				= nullptr;
 	m_pAutoChooser		= nullptr;
 	m_pFrontIntake		= nullptr;
 	m_pBackIntake		= nullptr;
@@ -109,7 +112,7 @@ void CRobotMain::RobotPeriodic()
 	SmartDashboard::PutBoolean("Front Transfer Infrared", m_pTransfer->m_aBallLocations[1]);
 	SmartDashboard::PutBoolean("Back Transfer Infrared", m_pTransfer->m_aBallLocations[2]);
 	
-	SmartDashboard::PutBoolean("Back-Down Limit Switch", m_pBackIntake->GetLimitSwitchState(false));
+	SmartDashboard::PutBoolean("Back-Dom_pLiftMotor1->ClearStickyFaults();wn Limit Switch", m_pBackIntake->GetLimitSwitchState(false));
 	SmartDashboard::PutBoolean("Back-Up Limit Switch", m_pBackIntake->GetLimitSwitchState(true));
 	SmartDashboard::PutBoolean("Front-Down Limit Switch", m_pFrontIntake->GetLimitSwitchState(false));
 	SmartDashboard::PutBoolean("Front-Up Limit Switch", m_pFrontIntake->GetLimitSwitchState(true));
@@ -388,6 +391,7 @@ void CRobotMain::TeleopInit()
 	m_pDrive->SetJoystickControl(true);
 	m_pFrontIntake->Init();
 	m_pBackIntake->Init();
+	m_pLift->Init();
 	m_pShooter->SetSafety(false);
 	m_pShooter->Init();
 	m_pShooter->StartFlywheelShot();
@@ -528,26 +532,35 @@ void CRobotMain::TeleopPeriodic()
 	if (m_pAuxController->GetPOV() == 0) m_pShooter->AdjustVelocity(0.001);
 	if (m_pAuxController->GetPOV() == 180) m_pShooter->AdjustVelocity(-0.001);
 
+	// Manually tick Lift to receive aux controller input
+	m_pLift->MoveArms(m_pAuxController->GetRawAxis(eLeftAxisY));
+
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings
 	**************************************************************************/
 	
 	// Add a toggle for vision in teleop just to be safe.
-	if(SmartDashboard::GetBoolean("bTeleopVision", false)) {
+	if(SmartDashboard::GetBoolean("bTeleopVision", false))
+	{
 		CVisionPacket* pVisionPacket = CVisionPacket::GetReceivedPacket();
-		if(pVisionPacket != nullptr) {
-			if(m_pPrevVisionPacket->m_nRandVal != pVisionPacket->m_nRandVal) {
+		if(pVisionPacket != nullptr)
+		{
+			if(m_pPrevVisionPacket->m_nRandVal != pVisionPacket->m_nRandVal)
+			{
 				pVisionPacket->ParseDetections();
-				for(int i = 0; i < pVisionPacket->m_nDetectionCount; i++) {
+				for(int i = 0; i < pVisionPacket->m_nDetectionCount; i++)
+				{
 					CVisionPacket::sObjectDetection* pObjDetection = pVisionPacket->m_pDetections[i];
 					
 					// For vision in teleop, we can try fine adjustments to the robot's angle to the hub...
-					if(pObjDetection->m_kClass == eHub) {
+					if(pObjDetection->m_kClass == eHub)
+					{
 						const double dTheta = (pObjDetection->m_nX - 160) * dAnglePerPixel;
 						const double dHalfWidthAngle = (pObjDetection->m_nWidth / 2) * dAnglePerPixel;
 						
 						// Turn by however much we need to center the shooter (camera, really) onto the hub.
-						if(m_pShooter->m_bShooterFullSpeed && (-dHalfWidthAngle > dTheta || dTheta > dHalfWidthAngle)) {
+						if(m_pShooter->m_bShooterFullSpeed && (-dHalfWidthAngle > dTheta || dTheta > dHalfWidthAngle))
+						{
 							m_pDrive->TurnByAngle(dTheta);
 							break;
 						}
