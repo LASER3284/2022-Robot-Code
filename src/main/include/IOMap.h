@@ -23,12 +23,12 @@ const int nFlywheelMotor2               =   6;      // Second flywheel motor    
 const int nLiftMotor1                   =   7;      // 
 const int nLiftMotor2                   =   8;      // 
 //const int nPneumatics                   =   9;      // REV Pneumatics Hub
-const int nIntakeMotor1                 =  10;      // Front intake motor       (SPARK MAX)
+//const int nIntakeMotor1                 =  10;      // Front intake motor       (SPARK MAX)
 const int nIntakeMotor2                 =  11;      // Back intake motor        (SPARK MAX)
 const int nTransferFront                =  12;      // Front transfer motor     (SPARK MAX)
 const int nTransferBack                 =  13;      // Back transfer motor      (SPARK MAX)
 const int nTransferVertical             =  14;      // Vertical transfer motor  (SPARK MAX)
-const int nIntakeDeployMotor1           =  16;      // Front intake deploy BAGs (TALON SRX)
+//const int nIntakeDeployMotor1           =  16;      // Front intake deploy BAGs (TALON SRX)
 const int nIntakeDeployMotor2           =  17;      // Back intake deploy BAGs  (TALON SRX)
 const int nHoodMotor                    =  20;      // Hood motor ID            (SPARK MAX)
 
@@ -39,13 +39,10 @@ const int nHoodMotor                    =  20;      // Hood motor ID            
 // Analog Channels.
 
 // Digital Channels.
-const int nFrontIntakeDownLS            =   0;
-const int nFrontIntakeUpLS              =   1;
-const int nBackIntakeDownLS             =   2;
-const int nBackIntakeUpLS               =   3;
-const int nTopTransferInfrared          =   4;
-const int nFrontTransferInfrared        =   5;
-const int nBackTransferInfrared         =   6;
+const int nBackIntakeDownLS             =   0;
+const int nBackIntakeUpLS               =   1;
+const int nBackTransferInfrared         =   2;
+const int nTopTransferInfrared          =   3;
 
 // Xbox Controller Button Assignments.
 enum XboxButtons 		{eButtonA = 1, eButtonB, eButtonX, eButtonY, eButtonLB, eButtonRB, eBack, eStart, eButtonLS, eButtonRS};

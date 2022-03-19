@@ -33,29 +33,23 @@ public:
 	void Init();
 	void StartVertical();
 	void StartVerticalShot();
-	void StartFront();
 	void StartBack();
 	void StopVertical();
-	void StopFront();
 	void StopBack();
 	void UpdateLocations();
 
-	// Arranged Vertical, Front, Back
-	bool m_aBallLocations[3] = {false, false, false};
-	bool m_bBallLocked = false;
+	// Arranged Vertical, Back
+	bool m_aBallLocations[2] = {false, false};
 private:
 	// Declare class objects and variables.
 	DigitalInput*		m_pTopInfrared;
-	DigitalInput*		m_pFrontInfrared;
 	DigitalInput*		m_pBackInfrared;
 
 	CANSparkMax*		m_pTopMotor;
-	CANSparkMax*		m_pFrontMotor;
 	CANSparkMax*		m_pBackMotor;
 	int 				m_nBallCount = 0;
 
 	Debouncer*			m_pTopDebouncer;
-	Debouncer*			m_pFrontDebouncer;
 	Debouncer*			m_pBackDebouncer;
 };
 

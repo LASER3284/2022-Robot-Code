@@ -33,6 +33,10 @@ CLift::~CLift()
 	m_pLiftMotor2 = nullptr;
 }
 
+void CLift::Tick() {
+
+}
+
 /******************************************************************************
 	Description:	Initialize motor configurations
 	Arguments:		None
@@ -48,6 +52,10 @@ void CLift::Init()
 	m_pLiftMotor1->ClearStickyFaults();
 	m_pLiftMotor2->ClearStickyFaults();
 
+	// Set the motors to brake mode.
+	m_pLiftMotor1->SetNeutralMode(NeutralMode::Brake);
+	m_pLiftMotor2->SetNeutralMode(NeutralMode::Brake);
+
 	// Make second lift motor follow the first and invert it
 	m_pLiftMotor2->Follow(*m_pLiftMotor1);
 	m_pLiftMotor2->SetInverted(true);
@@ -59,11 +67,13 @@ void CLift::Init()
 	Returns:		Nothing
 ******************************************************************************/
 void CLift::MoveArms(double dJoystickPosition)
-{
-	if (fabs(dJoystickPosition) > 0.100) 
-	{
-		m_pLiftMotor1->Set(0.100);
-	} else {
-		m_pLiftMotor1->Set(0.000);
-	}
+{	
+	// Check if the joystick is in the deadzone.
+	double dPosition = dJoystickPosition;
+	if (fabs(dPosition) < 0.100) dPosition = 0.0;
+
+	// If the joystick is positive, drive the arms down
+	if(dPosition > 0.250) m_pLiftMotor1->Set(-0.100);
+	else if(dPosition < -0.250) m_pLiftMotor1->Set(0.100);
+	else m_pLiftMotor1->Set(0.000);
 }

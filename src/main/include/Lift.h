@@ -11,6 +11,7 @@
 #include <frc/Solenoid.h>
 
 using namespace ctre::phoenix::motorcontrol::can;
+using namespace ctre::phoenix::motorcontrol;
 using namespace frc;
 
 /******************************************************************************
@@ -24,6 +25,7 @@ public:
 	// Declare class methods.
 	CLift();
 	~CLift();
+	void Tick();
 	void Init();
 	void MoveArms(double dJoystickPosition);
 

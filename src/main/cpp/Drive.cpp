@@ -93,27 +93,16 @@ void CDrive::Tick()
 {
 	if (m_bJoystickControl)
 	{
-		double dXAxis;
-		double dYAxis;
+		double dXAxis = m_pDriveController->GetRawAxis(eRightAxisX);
+		double dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY);
 		if (m_pDriveController->GetRawAxis(eRightTrigger) >= 0.950) {
 			// If the right drive trigger is pressed all the way, then divide joystick inputs by 2.
 			dXAxis = m_pDriveController->GetRawAxis(eRightAxisX) / 2;
 			dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY) / 2;
-		} else {
-			// Else, set the normal joystick values.
-			dXAxis = m_pDriveController->GetRawAxis(eRightAxisX);
-			dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY);
 		}
-
 		// Check if joystick is in deadzone.
-		if (fabs(dXAxis) < dJoystickDeadzone)
-		{
-			dXAxis = 0.0;
-		}
-		if (fabs(dYAxis) < dJoystickDeadzone)
-		{
-			dYAxis = 0.0;
-		}
+		if (fabs(dXAxis) < dJoystickDeadzone) dXAxis = 0.0;
+		if (fabs(dYAxis) < dJoystickDeadzone) dYAxis = 0.0;
 
 		// Set drivetrain powers to joystick controls.
 		m_pRobotDrive->ArcadeDrive(-dYAxis, dXAxis, false);
