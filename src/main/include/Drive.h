@@ -69,7 +69,7 @@ public:
 	void SetDriveSpeeds(double dLeftVoltage, double dRightVoltage);
 	bool IsTrajectoryFinished();
 	void GoForwardUntuned();				// NOTE: this is untuned and shouldn't be used in non-beta versions
-	void TurnByAngle(double dTheta);
+	void TurnByPower(double dPower);
 
 	DifferentialDriveOdometry*				m_pOdometry;
 

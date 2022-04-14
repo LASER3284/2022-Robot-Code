@@ -5,9 +5,9 @@
 ******************************************************************************/
 
 #ifndef Vision_h
-#define Vison_h
+#define Vision_h
 
-const double dAnglePerPixel = 69.000 / 320.000;
+const double dAnglePerPixel = 74.000 / 320.000;
 enum DetectionClass : unsigned char {
     eBlueHangar = 0x01,
     eRedHangar,

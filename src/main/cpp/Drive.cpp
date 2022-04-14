@@ -263,10 +263,10 @@ void CDrive::GoForwardUntuned()
 
 /******************************************************************************
     Description:	Turns the robot in the direction of the angle
-	Arguments:		dTheta
+	Arguments:		dPower
 	Returns:		Nothing
 ******************************************************************************/
-void CDrive::TurnByAngle(double dTheta)
+void CDrive::TurnByPower(double dPower)
 {
-	m_pRobotDrive->ArcadeDrive(0.000, dTheta / 100, false);
+	m_pRobotDrive->ArcadeDrive(0.000, dPower / 100.000, false);
 }

@@ -55,13 +55,15 @@ private:
 	Timer*								m_pTimer;
 	CIntake*							m_pBackIntake;
 	CShooter*							m_pShooter;
-	CLift*								m_pLift;
+	CLift*								m_pLeftLift;
+	CLift*								m_pRightLift;
 	CVisionPacket*						m_pPrevVisionPacket;
 	CTransfer*							m_pTransfer;
 
-	double	m_dStartTime;							// A double representing start time
-	Paths	m_nAutoState;							// Current Auto state
-	int		m_nTeleopState;							// Current Teleop state
-	int		m_nPreviousState;						// Previous state
+	double		m_dStartTime;							// A double representing start time
+	Paths		m_nAutoState;							// Current Auto state
+	ClimbStates m_kClimbState;							// Current Climbing state
+	int			m_nTeleopState;							// Current Teleop state
+	int			m_nPreviousState;						// Previous state
 };
 #endif

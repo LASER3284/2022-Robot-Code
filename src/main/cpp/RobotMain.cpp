@@ -28,12 +28,14 @@ CRobotMain::CRobotMain()
 	m_pTimer					= new Timer();
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<Paths>();
-	m_pLift						= new CLift();
+	m_pLeftLift					= new CLift(false);
+	m_pRightLift				= new CLift(true);
 	m_pBackIntake				= new CIntake(nIntakeMotor2, nBackIntakeDownLS, nBackIntakeUpLS, nIntakeDeployMotor2, false);
 	m_pShooter					= new CShooter();
 	m_nAutoState				= eAutoStopped;
 	m_dStartTime				= 0.0;
 	m_nPreviousState			= eTeleopStopped;
+	m_kClimbState				= eNoClimb;
 	m_pPrevVisionPacket         = new CVisionPacket();
 	m_pTransfer					= new CTransfer();
 }
@@ -49,7 +51,8 @@ CRobotMain::~CRobotMain()
 	delete m_pAuxController;
 	delete m_pDrive;
 	delete m_pTimer;
-	delete m_pLift;
+	delete m_pLeftLift;
+	delete m_pRightLift;
 	delete m_pAutoChooser;
 	delete m_pBackIntake;
 	delete m_pPrevVisionPacket;
@@ -59,7 +62,8 @@ CRobotMain::~CRobotMain()
 	m_pAuxController	= nullptr;
 	m_pDrive			= nullptr;
 	m_pTimer			= nullptr;
-	m_pLift				= nullptr;
+	m_pLeftLift			= nullptr;
+	m_pRightLift		= nullptr;
 	m_pAutoChooser		= nullptr;
 	m_pBackIntake		= nullptr;
 	m_pPrevVisionPacket = nullptr;
@@ -75,6 +79,9 @@ void CRobotMain::RobotInit()
 {
 	m_pDrive->Init();
 	m_pTransfer->Init();
+	
+	m_pLeftLift->Init();
+	m_pRightLift->Init();
 
 	// Setup autonomous chooser.
 	m_pAutoChooser->SetDefaultOption("Autonomous Idle", eAutoIdle);
@@ -103,9 +110,6 @@ void CRobotMain::RobotPeriodic()
 
 	// Tick the transfer system
 	m_pTransfer->UpdateLocations();
-
-	// Tick the climber system
-	m_pLift->Tick();
 
 	// Update SmartDashboard for easy checking.
 	SmartDashboard::PutBoolean("Vertical Transfer Infrared", m_pTransfer->m_aBallLocations[0]);
@@ -365,8 +369,10 @@ void CRobotMain::TeleopInit()
 {
 	m_pDrive->Init();
 	m_pDrive->SetJoystickControl(true);
+	m_pDrive->SetDriveSafety(false);
 	m_pBackIntake->Init();
-	m_pLift->Init();
+	m_pLeftLift->Init();
+	m_pRightLift->Init();
 	m_pShooter->SetSafety(false);
 	m_pShooter->Init();
 	m_pShooter->StartFlywheelShot();
@@ -464,43 +470,21 @@ void CRobotMain::TeleopPeriodic()
 	if (m_pAuxController->GetPOV() == 0) m_pShooter->AdjustVelocity(0.001);
 	if (m_pAuxController->GetPOV() == 180) m_pShooter->AdjustVelocity(-0.001);
 
-	// Manually tick Lift to receive aux controller input
-	m_pLift->MoveArms(m_pAuxController->GetRawAxis(eLeftAxisY));
+	// If both Lift mechanisms are ready, proceed to each stage based on button presses
+	if (m_pLeftLift->m_bReady && m_pRightLift->m_bReady) {
+		if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonA) && m_kClimbState == eNoClimb) m_kClimbState = eMid;
+		if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonB) && m_kClimbState == eMid) m_kClimbState = eHigh;
+		if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonY) && m_kClimbState == eHigh) m_kClimbState = eTraverse;
+		if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonX) && m_kClimbState == eTraverse) m_kClimbState = eHang;
+	}
+	m_pLeftLift->Tick(m_kClimbState);
+	m_pRightLift->Tick(m_kClimbState);
 
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings
 	**************************************************************************/
 	
-	// Add a toggle for vision in teleop just to be safe.
-	if(SmartDashboard::GetBoolean("bTeleopVision", false))
-	{
-		CVisionPacket* pVisionPacket = CVisionPacket::GetReceivedPacket();
-		if(pVisionPacket != nullptr)
-		{
-			if(m_pPrevVisionPacket->m_nRandVal != pVisionPacket->m_nRandVal)
-			{
-				pVisionPacket->ParseDetections();
-				for(int i = 0; i < pVisionPacket->m_nDetectionCount; i++)
-				{
-					CVisionPacket::sObjectDetection* pObjDetection = pVisionPacket->m_pDetections[i];
-					
-					// For vision in teleop, we can try fine adjustments to the robot's angle to the hub...
-					if(pObjDetection->m_kClass == eHub)
-					{
-						const double dTheta = (pObjDetection->m_nX - 160) * dAnglePerPixel;
-						const double dHalfWidthAngle = (pObjDetection->m_nWidth / 2) * dAnglePerPixel;
-						
-						// Turn by however much we need to center the shooter (camera, really) onto the hub.
-						if(m_pShooter->m_bShooterFullSpeed && (-dHalfWidthAngle > dTheta || dTheta > dHalfWidthAngle))
-						{
-							m_pDrive->TurnByAngle(dTheta);
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
+	// TODO: add vision functionality from TestPeriodic
 }
 
 /******************************************************************************
@@ -546,59 +530,43 @@ void CRobotMain::TestPeriodic()
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings
 	**************************************************************************/
+
+	// Retrieve most recent vision packet
 	CVisionPacket* pVisionPacket = CVisionPacket::GetReceivedPacket();
-	if(pVisionPacket != nullptr) {
-		if(m_pPrevVisionPacket->m_nRandVal != pVisionPacket->m_nRandVal) {
-			pVisionPacket->ParseDetections();
-			// DetectionClass kBallClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eBlueCargo : eRedCargo);
-		}
-		else m_pDrive->Tick();
-	}
-	else m_pDrive->Tick();
-
-	/*
-	// If the processed_vision is empty, then the vision code isn't running (?);
-	// Button A on drive controller must also have been pressed
-	if (!processed_vision.empty() && m_pDriveController->GetRawButtonPressed(eButtonA))
+	// If it's not a nullptr, then continue, otherwise tick Drive
+	if(pVisionPacket != nullptr && m_pDriveController->GetRawButton(eButtonA))
 	{
-		const char* pVisionPacketArr = processed_vision.c_str();
-		CVisionPacket* pVisionPacket = new CVisionPacket(pVisionPacketArr, processed_vision.length());
+		// If it's not the same as the last, continue, otherwise tick Drive
+		if(m_pPrevVisionPacket->m_nRandVal != pVisionPacket->m_nRandVal)
+		{
+			// Parse detections and determine appropriate color alliance
+			pVisionPacket->ParseDetections();
+			DetectionClass kBallClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eBlueCargo : eRedCargo);
 
-		if(pVisionPacket->m_nRandVal != 0xFF) {
-			if(m_pPrevVisionPacket->m_nRandVal != pVisionPacket->m_nRandVal) {
-				// Parse out the detections now that we know that it's a different packet 
-				pVisionPacket->ParseDetections();
-				DetectionClass kDetectClass = (DriverStation::GetAlliance() == DriverStation::Alliance::kBlue ? eBlueCargo : eRedCargo);
-				
-				// ostringstream oss;
-				for(int i = 0; i < pVisionPacket->m_nDetectionCount; i++) {
-					CVisionPacket::sObjectDetection* pObjDetection = pVisionPacket->m_pDetections[i];
-					// oss << "[" << i << "] - Conf: " << std::hex << (int)pObjDetection->m_nConfidence;
-					// oss << " - Depth: " << std::hex << (int)pObjDetection->m_nDepth << " ";	5
-					if(pObjDetection->m_kClass == kDetectClass) {
-						const double dTheta = (pObjDetection->m_nX - 160) * dAnglePerPixel;
-						const double dHalfWidthAngle = (pObjDetection->m_nWidth / 2) * dAnglePerPixel;
-						// Go forward
-						if (-dHalfWidthAngle < dTheta && dTheta < dHalfWidthAngle) {
-							wpi::outs() << "Going forward...\r\n";
-							m_pDrive->GoForwardUntuned(); 
-						}
-						// Turn to center the detected object
-						else {
-							wpi::outs() << "Turning...\r\n";
-							m_pDrive->TurnByAngle(dTheta);
-						}
-					}
-				}
-				wpi::outs().flush();
+			// Loop through the detections until the first correctly colored ball is found
+			int* n = new int();
+			for (*n = 0; (pVisionPacket->m_pDetections[*n]->m_kClass != kBallClass) && (*n < 15); *n += 1);
 
-			} else m_pDrive->Tick();
-			m_pPrevVisionPacket = pVisionPacket;
+			// If n is a nullptr (i.e. wasn't looped through), tick drive instead of following ball
+			if (n != nullptr)
+			{
+				CVisionPacket::sObjectDetection* pValidBall = pVisionPacket->m_pDetections[*n];
+
+				// Find the angle from the center of the FoV and the amount of FoV it takes up
+				const double dTheta = (pValidBall->m_nX - 160) * dAnglePerPixel;
+				const double dHalfWidthAngle = (pValidBall->m_nWidth / 2) * dAnglePerPixel;
+
+				// If dTheta is not within the angle taken up by the ball, then turn at 15% power
+				// NOTE: TurnByPower(double) requests the value in percent form, not decimal
+				if (fabs(dTheta) > dHalfWidthAngle) m_pDrive->TurnByPower(15.000);
+			}
+			else m_pDrive->Tick();
 		}
 		else m_pDrive->Tick();
 	}
 	else m_pDrive->Tick();
-	*/
+	
+	m_pPrevVisionPacket = pVisionPacket;
 }
 
 #ifndef RUNNING_FRC_TESTS
