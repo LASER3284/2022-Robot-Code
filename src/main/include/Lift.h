@@ -42,6 +42,9 @@ public:
 	void Hang();
 	void ReleaseMid();
 	void ReleaseHigh();
+	void ManualAdjust(double dSpeed);
+	void SetMidHook(bool bValue);
+	void SetHighHook(bool bValue);
 
 	bool m_bReady; // Bool on whether the Lift mechanism is ready for the next stage
 

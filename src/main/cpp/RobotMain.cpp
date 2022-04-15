@@ -94,6 +94,7 @@ void CRobotMain::RobotInit()
 	SmartDashboard::PutData(m_pAutoChooser);
 
 	SmartDashboard::PutBoolean("bTeleopVision", false);
+	SmartDashboard::PutBoolean("bAutoClimb", true);
 
 	m_pTimer->Start();
 }
@@ -466,19 +467,49 @@ void CRobotMain::TeleopPeriodic()
 		}
 	}
 
-	// Adjust the velocity of the flywheel with the DPad up/down.
-	if (m_pAuxController->GetPOV() == 0) m_pShooter->AdjustVelocity(0.001);
-	if (m_pAuxController->GetPOV() == 180) m_pShooter->AdjustVelocity(-0.001);
-
-	// If both Lift mechanisms are ready, proceed to each stage based on button presses
-	if (m_pLeftLift->m_bReady && m_pRightLift->m_bReady) {
-		if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonA) && m_kClimbState == eNoClimb) m_kClimbState = eMid;
-		if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonB) && m_kClimbState == eMid) m_kClimbState = eHigh;
-		if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonY) && m_kClimbState == eHigh) m_kClimbState = eTraverse;
-		if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonX) && m_kClimbState == eTraverse) m_kClimbState = eHang;
+	// Check if climb is meant to be automated or not
+	if (SmartDashboard::GetBoolean("bAutoClimb", false)) {
+		// If both Lift mechanisms are ready, proceed to each stage based on button presses
+		if (m_pLeftLift->m_bReady && m_pRightLift->m_bReady) {
+			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonA) && m_kClimbState == eNoClimb) m_kClimbState = eMid;
+			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonB) && m_kClimbState == eMid) m_kClimbState = eHigh;
+			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonY) && m_kClimbState == eHigh) m_kClimbState = eTraverse;
+			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonX) && m_kClimbState == eTraverse) m_kClimbState = eHang;
+		}
+		m_pLeftLift->Tick(m_kClimbState);
+		m_pRightLift->Tick(m_kClimbState);
+	} else {
+		if (m_pAuxController->GetPOV() == 0) 
+		{
+			m_pLeftLift->ManualAdjust(0.100);
+			m_pRightLift->ManualAdjust(0.100);
+		}
+		if (m_pAuxController->GetPOV() == 180) 
+		{
+			m_pLeftLift->ManualAdjust(-0.100);
+			m_pRightLift->ManualAdjust(-0.100);
+			if (m_pAuxController->GetRawButton(eButtonA))
+			{
+				m_pLeftLift->SetMidHook(true);
+				m_pRightLift->SetMidHook(true);
+			}
+			if (m_pAuxController->GetRawButton(eButtonB))
+			{
+				m_pLeftLift->SetMidHook(false);
+				m_pRightLift->SetMidHook(false);
+			}
+			if (m_pAuxController->GetRawButton(eButtonY))
+			{
+				m_pLeftLift->SetHighHook(true);
+				m_pRightLift->SetHighHook(true);
+			}
+			if (m_pAuxController->GetRawButton(eButtonX))
+			{
+				m_pLeftLift->SetHighHook(false);
+				m_pRightLift->SetHighHook(false);
+			}
+		}
 	}
-	m_pLeftLift->Tick(m_kClimbState);
-	m_pRightLift->Tick(m_kClimbState);
 
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings

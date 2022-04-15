@@ -185,3 +185,32 @@ void CLift::Hang()
 		m_pLiftMotor1->Set(0.000);
 	}
 }
+
+/******************************************************************************
+	Description:	Manual adjustment for climbing arms
+	Arguments:		double dSpeed - the speed at which to adjust the arms
+	Returns:		Nothing
+******************************************************************************/
+void CLift::ManualAdjust(double dSpeed)
+{
+	m_pLiftMotor1->Set(dSpeed);
+}
+
+/******************************************************************************
+	Description:	Manual set or release of mid hook
+	Arguments:		bool bValue - whether to set or release mid hook
+	Returns:		Nothing
+******************************************************************************/
+void CLift::SetMidHook(bool bValue)
+{
+	m_pMidClaw->Set(bValue ? DoubleSolenoid::Value::kForward : DoubleSolenoid::Value::kReverse);
+}
+/******************************************************************************
+	Description:	Manual set or release of High hook
+	Arguments:		bool bValue - whether to set or release High hook
+	Returns:		Nothing
+******************************************************************************/
+void CLift::SetHighHook(bool bValue)
+{
+	m_pHighClaw->Set(bValue ? DoubleSolenoid::Value::kForward : DoubleSolenoid::Value::kReverse);
+}
