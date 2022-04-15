@@ -42,9 +42,8 @@ public:
     bool m_bShooterOn;
     bool m_bShooterFullSpeed;
 
-    // Normal Speed: 0.700
-    double m_dFlywheelMotorSpeed = 0.525;
-    double m_dIdleMotorSpeed = 0.500;
+    double m_dFlywheelMotorSpeed = 0.400;
+    double m_dIdleMotorSpeed = 0.375;
 private:
     // Declare class objects and variables.
     WPI_TalonFX*      m_pFlywheelMotor1;
@@ -52,9 +51,9 @@ private:
 
     bool m_bSafety;
     bool m_bIdle;
-    double m_dPropotional = 2.51;
-    double m_dIntegral = 1e-5;
-    double m_dDerivative = 0.0011;
+    double m_dPropotional = 2.51575;
+    double m_dIntegral = 1e-4795;
+    double m_dDerivative = 0.00155;
     double m_dFeedForward = 0.0465;
 
 

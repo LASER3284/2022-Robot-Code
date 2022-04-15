@@ -82,12 +82,12 @@ void CRobotMain::RobotInit()
 	m_pAutoChooser->AddOption("Test Path", eTestPath);
 	m_pAutoChooser->AddOption("Dumb Taxi", eDumbTaxi);
 	m_pAutoChooser->AddOption("Taxi Shot", eTaxiShot);
+	m_pAutoChooser->AddOption("Taxi 2 Shot", eTaxi2Shot);
 	// m_pAutoChooser->AddOption("Less Dumb Taxi", eLessDumbTaxi1);
 	m_pAutoChooser->AddOption("YOLO Terminator", eTerminator);
 	SmartDashboard::PutData(m_pAutoChooser);
 
 	SmartDashboard::PutBoolean("bTeleopVision", false);
-
 	m_pTimer->Start();
 }
 
@@ -126,8 +126,14 @@ void CRobotMain::AutonomousInit()
 	m_pDrive->SetDriveSafety(false);
 	m_pDrive->SetJoystickControl(false);
 
+	m_pBackIntake->Init();
+	m_pShooter->SetSafety(false);
+	m_pShooter->Init();
+	m_pShooter->StartFlywheelShot();
+	m_pTransfer->Init();
+
 	// Record start time
-	m_dStartTime = -1;
+	m_dStartTime = (double)m_pTimer->Get();
 
 	// Get selected option and switch m_nAutoState based on that
 	m_nAutoState = m_pAutoChooser->GetSelected();
@@ -145,6 +151,8 @@ void CRobotMain::AutonomousInit()
 ******************************************************************************/
 void CRobotMain::AutonomousPeriodic() 
 {
+	double dElapsed = ((double)m_pTimer->Get() - m_dStartTime);
+
 	switch (m_nAutoState) 
 	{
 		// Force stop everything
@@ -181,36 +189,73 @@ void CRobotMain::AutonomousPeriodic()
 
 		// Dumb Taxi
 		case eDumbTaxi:
-			if(m_dStartTime < 0) m_dStartTime = (double)m_pTimer->Get();
-			
-			if( ((double)m_pTimer->Get() - m_dStartTime) < 1.250) 
+			if(dElapsed < 1.250) 
 				m_pDrive->SetDriveSpeeds(-6.000, -6.000);
 			else 
 				m_nAutoState = eAutoStopped;
 			break;
 
 		case eTaxiShot:
-			if(m_dStartTime < 0) {
-				m_dStartTime = (double)m_pTimer->Get();
-			}
-			// Drive backwards for 1.25s
-			if( ((double)m_pTimer->Get() - m_dStartTime) < 1.250) {
-				m_pDrive->SetDriveSpeeds(-6.000, -6.000);
+			m_pShooter->StartFlywheelShot();
+
+			// Drive backwards for 0.5s
+			if(dElapsed < 1.00) {
+				m_pDrive->SetDriveSpeeds(-3.000, -3.000);
 			}
 			// Rev up the shooter for shooting
 			else {
 				m_pDrive->ForceStop();
-				
-				m_pShooter->StartFlywheelShot();
+
+				bool bShoot = ((double)m_pTimer->Get() - m_dStartTime) > 4.5;
+				if(m_pShooter->m_bShooterFullSpeed || bShoot) {
+					m_pTransfer->StartVerticalShot();
+				}
+
 				// If we don't have a ball in the vertical anymore, shut off the shooter.
 				if(!m_pTransfer->m_aBallLocations[0]) {
 					m_pShooter->IdleStop();
 					m_pTransfer->StopVertical();
 					m_nAutoState = eAutoStopped;
 				}
-				// If the shooter is at full speed, start our vertical shot.
+			}
+			break;
+		case eTaxi2Shot:
+			m_pShooter->StartFlywheelShot();
+
+			// Pull the intake down and then start it			
+			if(dElapsed < 0.125) {
+				m_pBackIntake->MoveIntake(false);
+				m_pTransfer->StopVertical();
+			}
+
+			if(m_pBackIntake->GetLimitSwitchState(false)) {
+				m_pBackIntake->StartIntake();
+				m_pBackIntake->StopDeploy();
+				if(!m_pTransfer->m_aBallLocations[1]) m_pTransfer->StartBack();
+			}
+
+
+			if(dElapsed < 6.50 && m_pTransfer->m_aBallLocations[1]) m_pTransfer->StopBack();
+
+			// Drive backwards for 0.5s
+			if(dElapsed < 1.00) {
+				m_pDrive->SetDriveSpeeds(-3.000, -3.000);
+			}
+			// Rev up the shooter for shooting
+			else {
+				m_pDrive->ForceStop();
+
+				// Drive forward for .5s
+				if(dElapsed > 1.25) m_pDrive->SetDriveSpeeds(1.250, 1.250);
+				if(dElapsed > 1.50) m_pDrive->ForceStop();
+
 				if(m_pShooter->m_bShooterFullSpeed) {
-					m_pTransfer->StartVerticalShot();
+					if(dElapsed > 4.50) {
+						m_pTransfer->StartVerticalShot();
+					}
+
+					if(dElapsed < 6.50 && m_pTransfer->m_aBallLocations[0] && m_pTransfer->m_aBallLocations[1]) m_pTransfer->StopBack();
+					else if(dElapsed >= 6.50 && !m_pTransfer->m_aBallLocations[0]) m_pTransfer->StartBack();
 				}
 			}
 			break;
@@ -410,6 +455,8 @@ void CRobotMain::TeleopPeriodic()
 		if(!m_pBackIntake->GetLimitSwitchState(false)) {
 			m_pBackIntake->MoveIntake(false);
 			m_pBackIntake->m_bGoal = false;
+			// Start the intakes on the way down...
+			m_pBackIntake->StartIntake();
 		}
 	}
 	else if(m_pDriveController->GetRawButtonReleased(eButtonRB)) {
@@ -431,18 +478,9 @@ void CRobotMain::TeleopPeriodic()
 		m_pBackIntake->m_bGoal = !m_pBackIntake->m_bGoal;
 	}
 	
-
-	// We need to do some jankiness in order to lock the value of the vertical transfer sensor for shooting...	
-	// If the front/back intake is on, and we don't have a ball in the vertical, start the front/back transfer
-	if (m_pBackIntake->m_bIntakeOn && !m_pTransfer->m_aBallLocations[0]) {
-		m_pTransfer->StartBack();
-	}
-	
-	// If we have more than two balls at a time, we need to stop the intakes that we're running AND transfers to avoid shuffling the balls.
-	if(iBallCount >= 2) {
-		// We need to stop the horizontal transfers as well.
-		m_pTransfer->StopBack();
-	}
+	// Stop the horizontal transfer if we've got 2 balls
+	if(iBallCount >= 2) m_pTransfer->StopBack();
+	else m_pTransfer->StartBack();
 
 	// Send balls into the flywheel with the trigger (even if we don't technically have a ball in the vertical)
 	if (m_pAuxController->GetRawAxis(eRightTrigger) >= 0.95) {

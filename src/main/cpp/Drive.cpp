@@ -189,7 +189,7 @@ void CDrive::FollowTrajectory()
 void CDrive::SetTrajectory(Paths nPath)
 {
 	// Taxi pathes doesn't need to set a trajectory, as it's all time based...
-	if(nPath == eDumbTaxi || nPath == eTaxiShot) return;
+	if(nPath == eDumbTaxi || nPath == eTaxiShot || nPath == eTaxi2Shot) return;
 
 	m_pTrajectoryConstants->SelectTrajectory(nPath);
 	m_Trajectory = m_pTrajectoryConstants->GetSelectedTrajectory();

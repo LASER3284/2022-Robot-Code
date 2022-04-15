@@ -9,8 +9,9 @@
 
 const double dAnglePerPixel = 69.000 / 320.000;
 enum DetectionClass : unsigned char {
-    eBlueHangar = 0x01,
-    eRedHangar,
+    eCargo = 0x00, // Note: This shouldn't really be used; It's fairly exclusive to the network.
+    //eBlueHangar,
+    //eRedHangar,
     eHub,
     eRedCargo,
     eBlueCargo

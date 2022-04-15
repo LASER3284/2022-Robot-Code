@@ -14,23 +14,23 @@ const double dMotorOpenLoopRampRate		= 0.650;
 // Solenoid Channels.
 
 // CAN Device IDs.
-const int nLeadDriveMotor1              =   1;      // Left LD motor            (TALON FX/FALCON 500)
-const int nFollowDriveMotor1            =   2;      // Left FD motor            (TALON FX/FALCON 500)
-const int nLeadDriveMotor2              =   3;      // Right LD motor           (TALON FX/FALCON 500)
-const int nFollowDriveMotor2            =   4;      // Right FD motor           (TALON FX/FALCON 500)
-const int nFlywheelMotor1               =   5;      // First flywheel motor     (TALON FX/FALCON 500)
-const int nFlywheelMotor2               =   6;      // Second flywheel motor    (TALON FX/FALCON 500)
-const int nLiftMotor1                   =   7;      // 
-const int nLiftMotor2                   =   8;      // 
+const int nLeadDriveMotor1              =   1;      // Left LD motor              (TALON FX/FALCON 500)
+const int nFollowDriveMotor1            =   2;      // Left FD motor              (TALON FX/FALCON 500)
+const int nLeadDriveMotor2              =   3;      // Right LD motor             (TALON FX/FALCON 500)
+const int nFollowDriveMotor2            =   4;      // Right FD motor             (TALON FX/FALCON 500)
+const int nFlywheelMotor1               =   5;      // First flywheel motor       (TALON FX/FALCON 500)
+const int nFlywheelMotor2               =   6;      // Second flywheel motor      (TALON FX/FALCON 500)
+const int nLiftMotor1                   =   7;      // First climb arm motor      (TALON FX/FALCON 500)
+const int nLiftMotor2                   =   8;      // Second climb arm motor     (TALON FX/FALCON500)
 //const int nPneumatics                   =   9;      // REV Pneumatics Hub
 //const int nIntakeMotor1                 =  10;      // Front intake motor       (SPARK MAX)
-const int nIntakeMotor2                 =  11;      // Back intake motor        (SPARK MAX)
-const int nTransferFront                =  12;      // Front transfer motor     (SPARK MAX)
-const int nTransferBack                 =  13;      // Back transfer motor      (SPARK MAX)
-const int nTransferVertical             =  14;      // Vertical transfer motor  (SPARK MAX)
+const int nIntakeMotor2                 =  11;      // Back intake motor          (SPARK MAX)
+//const int nTransferFront                =  12;      // Front transfer motor     (SPARK MAX)
+const int nTransferBack                 =  13;      // Back transfer motor        (SPARK MAX)
+const int nTransferVertical             =  14;      // Vertical transfer motor    (SPARK MAX)
 //const int nIntakeDeployMotor1           =  16;      // Front intake deploy BAGs (TALON SRX)
-const int nIntakeDeployMotor2           =  17;      // Back intake deploy BAGs  (TALON SRX)
-const int nHoodMotor                    =  20;      // Hood motor ID            (SPARK MAX)
+const int nIntakeDeployMotor2           =  17;      // Back intake deploy BAGs    (TALON SRX)
+const int nHoodMotor                    =  20;      // Hood motor ID              (SPARK MAX)
 
 // PWM Channels.
 

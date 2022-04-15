@@ -38,7 +38,7 @@ void CTrajectoryConstants::SelectTrajectory(int nSelection)
 			path = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/TestPath.wpilib.json");
 			break;
 	}
-
+	
 	m_pSelectedPath = (Trajectory*)malloc(sizeof(path) + 1);
 	memcpy(m_pSelectedPath, &path, sizeof(path) + 1);
 }
