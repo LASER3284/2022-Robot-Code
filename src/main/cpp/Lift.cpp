@@ -18,12 +18,12 @@ CLift::CLift(bool bInverted)
 	if (!bInverted)
 	{
 		m_pLiftMotor1	= new WPI_TalonFX(nLiftMotor1);
-		m_pMidClaw		= new DoubleSolenoid(nPneumatics, PneumaticsModuleType::CTREPCM, nLeftMidClaw1, nLeftMidClaw2);
-		m_pHighClaw		= new DoubleSolenoid(nPneumatics, PneumaticsModuleType::CTREPCM, nLeftHighClaw1, nLeftHighClaw2);
+		m_pMidClaw		= new DoubleSolenoid(0, PneumaticsModuleType::CTREPCM, nLeftMidClaw1, nLeftMidClaw2);
+		m_pHighClaw		= new DoubleSolenoid(0, PneumaticsModuleType::CTREPCM, nLeftHighClaw1, nLeftHighClaw2);
 	} else {
 		m_pLiftMotor1	= new WPI_TalonFX(nLiftMotor2);
-		m_pMidClaw		= new DoubleSolenoid(nPneumatics, PneumaticsModuleType::CTREPCM, nRightMidClaw1, nRightMidClaw2);
-		m_pHighClaw		= new DoubleSolenoid(nPneumatics, PneumaticsModuleType::CTREPCM, nRightHighClaw1, nRightHighClaw2);
+		m_pMidClaw		= new DoubleSolenoid(0, PneumaticsModuleType::CTREPCM, nRightMidClaw1, nRightMidClaw2);
+		m_pHighClaw		= new DoubleSolenoid(0, PneumaticsModuleType::CTREPCM, nRightHighClaw1, nRightHighClaw2);
 	}
 	m_bInverted			= bInverted;
 }

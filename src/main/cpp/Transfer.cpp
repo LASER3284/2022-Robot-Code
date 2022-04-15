@@ -29,7 +29,7 @@ CTransfer::CTransfer()
 	};
 	m_pTopDebouncer = new Debouncer {
 		20_ms,
-		Debouncer::DebounceType::kBoth
+		Debouncer::DebounceType::kRising
 	};
 }
 
@@ -62,8 +62,10 @@ CTransfer::~CTransfer()
 ******************************************************************************/
 void CTransfer::Init()
 {
-	m_pTopMotor->SetOpenLoopRampRate(0.250);
-	m_pBackMotor->SetOpenLoopRampRate(0.750);
+	m_pTopMotor->SetOpenLoopRampRate(0.000);
+	m_pTopMotor->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+	m_pBackMotor->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+	m_pBackMotor->SetOpenLoopRampRate(0.000);
 	UpdateLocations();
 }
 
@@ -83,7 +85,7 @@ void CTransfer::StartVertical()
 	Returns:		Nothing
 ******************************************************************************/
 void CTransfer::StartVerticalShot() {
-	m_pTopMotor->Set(-0.950);
+	m_pTopMotor->Set(-0.750);
 }
 
 /******************************************************************************
@@ -93,7 +95,7 @@ void CTransfer::StartVerticalShot() {
 ******************************************************************************/
 void CTransfer::StartBack()
 {
-	m_pBackMotor->Set(0.850);
+	m_pBackMotor->Set(0.500);
 }
 
 /******************************************************************************
