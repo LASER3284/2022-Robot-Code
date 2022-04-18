@@ -9,23 +9,15 @@
 
 /******************************************************************************
 	Description:	CLift constructor - init local variables/classes
-	Arguments:		bool bInverted - whether this instance is referencing 
-					left (false) or right (true)
 	Returns:		Nothing
 ******************************************************************************/
-CLift::CLift(bool bInverted)
+CLift::CLift()
 {
-	if (!bInverted)
-	{
-		m_pLiftMotor1	= new WPI_TalonFX(nLiftMotor1);
-		m_pMidClaw		= new DoubleSolenoid(0, PneumaticsModuleType::CTREPCM, nLeftMidClaw1, nLeftMidClaw2);
-		m_pHighClaw		= new DoubleSolenoid(0, PneumaticsModuleType::CTREPCM, nLeftHighClaw1, nLeftHighClaw2);
-	} else {
-		m_pLiftMotor1	= new WPI_TalonFX(nLiftMotor2);
-		m_pMidClaw		= new DoubleSolenoid(0, PneumaticsModuleType::CTREPCM, nRightMidClaw1, nRightMidClaw2);
-		m_pHighClaw		= new DoubleSolenoid(0, PneumaticsModuleType::CTREPCM, nRightHighClaw1, nRightHighClaw2);
-	}
-	m_bInverted			= bInverted;
+	m_pLiftMotor1	= new WPI_TalonFX(nLiftMotor1);
+	m_pLiftMotor2	= new WPI_TalonFX(nLiftMotor2);
+
+	m_pBackClaw = new Solenoid(0, PneumaticsModuleType::CTREPCM, nBackClaw1);
+	m_pFrontClaw = new Solenoid(0, PneumaticsModuleType::CTREPCM, nFrontClaw1);
 }
 
 /******************************************************************************
@@ -36,12 +28,8 @@ CLift::CLift(bool bInverted)
 CLift::~CLift()
 {
 	delete m_pLiftMotor1;
-	delete m_pMidClaw;
-	delete m_pHighClaw;
 
 	m_pLiftMotor1	= nullptr;
-	m_pMidClaw		= nullptr;
-	m_pHighClaw		= nullptr;
 }
 
 /******************************************************************************
@@ -53,23 +41,28 @@ void CLift::Init()
 {
 	// Configure open loop ramp rate
 	m_pLiftMotor1->ConfigOpenloopRamp(dMotorOpenLoopRampRate);
+	m_pLiftMotor2->ConfigOpenloopRamp(dMotorOpenLoopRampRate);
 
 	// Clear sticky faults
 	m_pLiftMotor1->ClearStickyFaults();
 
 	// Set the motors to brake mode.
 	m_pLiftMotor1->SetNeutralMode(NeutralMode::Brake);
+	m_pLiftMotor2->ConfigOpenloopRamp(dMotorOpenLoopRampRate);
 
 	// Configure rotary encoder for Lift Motor
 	m_pLiftMotor1->ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor);
 	m_pLiftMotor1->ConfigClosedloopRamp(0.650);
+	m_pLiftMotor2->ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor);
+	m_pLiftMotor2->ConfigClosedloopRamp(0.650);
+
 
 	// Set inverted based on the constructor input
-	m_pLiftMotor1->SetInverted(m_bInverted);
+	m_pLiftMotor1->SetInverted(false);
+	m_pLiftMotor2->SetInverted(true);
 
-	// Set both claws to open (assuming reverse is open :) )
-	m_pHighClaw->Set(DoubleSolenoid::Value::kReverse);
-	m_pMidClaw->Set(DoubleSolenoid::Value::kReverse);
+	m_pFrontClaw->Set(true);
+	m_pBackClaw->Set(true);
 }
 
 /******************************************************************************
@@ -114,12 +107,12 @@ bool CLift::GoMid()
 	if (m_pLiftMotor1->GetSelectedSensorPosition() < m_dDefaultMid)
 	{
 		// Rotate arm 90 degrees to prepare for mid bar
-		m_pLiftMotor1->Set(0.100);
+		ManualAdjust(0.850);
 		return false;
 	} else {
 		// Stop rotating arm and grab bar with claw
-		m_pLiftMotor1->Set(0.000);
-		m_pMidClaw->Set(DoubleSolenoid::Value::kForward);
+		ManualAdjust(0.000);
+		m_pFrontClaw->Set(false);
 		return true;
 	}
 }
@@ -135,12 +128,13 @@ bool CLift::GoHigh()
 	if (m_pLiftMotor1->GetSelectedSensorPosition() < m_dDefaultHigh)
 	{
 		// Rotate arm up 122.6 degrees
-		m_pLiftMotor1->Set(0.100);
+		ManualAdjust(0.850);
+		m_pBackClaw->Set(false);
 		return false;
 	} else {
 		// Stop rotation and grab bar with claw
-		m_pLiftMotor1->Set(0.000);
-		m_pHighClaw->Set(DoubleSolenoid::Value::kForward);
+		ManualAdjust(0.000);
+		m_pBackClaw->Set(true);
 		return true;
 	}
 }
@@ -156,13 +150,13 @@ bool CLift::Traverse()
 	if (m_pLiftMotor1->GetSelectedSensorPosition() < m_dDefaultTraverse)
 	{
 		// Open mid claw and begin rotating arm 180 degrees
-		m_pMidClaw->Set(DoubleSolenoid::Value::kReverse);
-		m_pLiftMotor1->Set(0.100);
+		m_pFrontClaw->Set(false);
+		ManualAdjust(0.850);
 		return false;
 	} else {
 		// Stop rotation and grab bar with mid claw
-		m_pLiftMotor1->Set(0.000);
-		m_pMidClaw->Set(DoubleSolenoid::Value::kForward);
+		ManualAdjust(0.000);
+		m_pFrontClaw->Set(true);
 		return true;
 	}
 }
@@ -178,11 +172,11 @@ void CLift::Hang()
 	if (m_pLiftMotor1->GetSelectedSensorPosition() < m_dDefaultHang)
 	{
 		// Release high bar and begin rotating 57.4 degrees
-		m_pHighClaw->Set(DoubleSolenoid::Value::kReverse);
-		m_pLiftMotor1->Set(0.100);
+		m_pBackClaw->Set(false);
+		ManualAdjust(0.850);
 	} else {
 		// Stop rotation
-		m_pLiftMotor1->Set(0.000);
+		ManualAdjust(0.000);
 	}
 }
 
@@ -194,6 +188,7 @@ void CLift::Hang()
 void CLift::ManualAdjust(double dSpeed)
 {
 	m_pLiftMotor1->Set(dSpeed);
+	m_pLiftMotor2->Set(dSpeed);
 }
 
 /******************************************************************************
@@ -201,16 +196,16 @@ void CLift::ManualAdjust(double dSpeed)
 	Arguments:		bool bValue - whether to set or release mid hook
 	Returns:		Nothing
 ******************************************************************************/
-void CLift::SetMidHook(bool bValue)
+void CLift::SetFrontHook(bool bValue)
 {
-	m_pMidClaw->Set(bValue ? DoubleSolenoid::Value::kForward : DoubleSolenoid::Value::kReverse);
+	m_pFrontClaw->Set(bValue);
 }
 /******************************************************************************
 	Description:	Manual set or release of High hook
 	Arguments:		bool bValue - whether to set or release High hook
 	Returns:		Nothing
 ******************************************************************************/
-void CLift::SetHighHook(bool bValue)
+void CLift::SetBackHook(bool bValue)
 {
-	m_pHighClaw->Set(bValue ? DoubleSolenoid::Value::kForward : DoubleSolenoid::Value::kReverse);
+	m_pBackClaw->Set(bValue);
 }

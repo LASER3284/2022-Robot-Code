@@ -28,8 +28,7 @@ CRobotMain::CRobotMain()
 	m_pTimer					= new Timer();
 	m_pDrive					= new CDrive(m_pDriveController);
 	m_pAutoChooser				= new SendableChooser<Paths>();
-	m_pLeftLift					= new CLift(false);
-	m_pRightLift				= new CLift(true);
+	m_pLift					    = new CLift();
 	m_pBackIntake				= new CIntake(nIntakeMotor2, nBackIntakeDownLS, nBackIntakeUpLS, nIntakeDeployMotor2, false);
 	m_pShooter					= new CShooter();
 	m_nAutoState				= eAutoStopped;
@@ -51,8 +50,7 @@ CRobotMain::~CRobotMain()
 	delete m_pAuxController;
 	delete m_pDrive;
 	delete m_pTimer;
-	delete m_pLeftLift;
-	delete m_pRightLift;
+	delete m_pLift;
 	delete m_pAutoChooser;
 	delete m_pBackIntake;
 	delete m_pPrevVisionPacket;
@@ -62,8 +60,7 @@ CRobotMain::~CRobotMain()
 	m_pAuxController	= nullptr;
 	m_pDrive			= nullptr;
 	m_pTimer			= nullptr;
-	m_pLeftLift			= nullptr;
-	m_pRightLift		= nullptr;
+	m_pLift			    = nullptr;
 	m_pAutoChooser		= nullptr;
 	m_pBackIntake		= nullptr;
 	m_pPrevVisionPacket = nullptr;
@@ -80,8 +77,7 @@ void CRobotMain::RobotInit()
 	m_pDrive->Init();
 	m_pTransfer->Init();
 	
-	m_pLeftLift->Init();
-	m_pRightLift->Init();
+	m_pLift->Init();
 
 	// Setup autonomous chooser.
 	m_pAutoChooser->SetDefaultOption("Autonomous Idle", eAutoIdle);
@@ -417,8 +413,8 @@ void CRobotMain::TeleopInit()
 	m_pDrive->SetJoystickControl(true);
 	m_pDrive->SetDriveSafety(false);
 	m_pBackIntake->Init();
-	m_pLeftLift->Init();
-	m_pRightLift->Init();
+	m_pLift->Init();
+	m_pLift->Init();
 	m_pShooter->SetSafety(false);
 	m_pShooter->Init();
 	m_pShooter->StartFlywheelShot();
@@ -508,45 +504,35 @@ void CRobotMain::TeleopPeriodic()
 	// Check if climb is meant to be automated or not
 	if (SmartDashboard::GetBoolean("bAutoClimb", false)) {
 		// If both Lift mechanisms are ready, proceed to each stage based on button presses
-		if (m_pLeftLift->m_bReady && m_pRightLift->m_bReady) {
+		if (m_pLift->m_bReady) {
 			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonA) && m_kClimbState == eNoClimb) m_kClimbState = eMid;
 			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonB) && m_kClimbState == eMid) m_kClimbState = eHigh;
 			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonY) && m_kClimbState == eHigh) m_kClimbState = eTraverse;
 			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonX) && m_kClimbState == eTraverse) m_kClimbState = eHang;
 		}
-		m_pLeftLift->Tick(m_kClimbState);
-		m_pRightLift->Tick(m_kClimbState);
+
+		m_pLift->Tick(m_kClimbState);
 	} else {
+		// If the POV is up, spin the arms up
 		if (m_pAuxController->GetPOV() == 0) 
 		{
-			m_pLeftLift->ManualAdjust(0.100);
-			m_pRightLift->ManualAdjust(0.100);
+			m_pLift->ManualAdjust(0.950);
 		}
-		if (m_pAuxController->GetPOV() == 180) 
-		{
-			m_pLeftLift->ManualAdjust(-0.100);
-			m_pRightLift->ManualAdjust(-0.100);
-			if (m_pAuxController->GetRawButton(eButtonA))
-			{
-				m_pLeftLift->SetMidHook(true);
-				m_pRightLift->SetMidHook(true);
-			}
-			if (m_pAuxController->GetRawButton(eButtonB))
-			{
-				m_pLeftLift->SetMidHook(false);
-				m_pRightLift->SetMidHook(false);
-			}
-			if (m_pAuxController->GetRawButton(eButtonY))
-			{
-				m_pLeftLift->SetHighHook(true);
-				m_pRightLift->SetHighHook(true);
-			}
-			if (m_pAuxController->GetRawButton(eButtonX))
-			{
-				m_pLeftLift->SetHighHook(false);
-				m_pRightLift->SetHighHook(false);
-			}
+
+		// If the D-PAD is not being pressed, stop the arms.
+		if (m_pAuxController->GetPOV() == -1) {
+			m_pLift->ManualAdjust(0.000);
 		}
+
+		// If the POV is down, spin the arms down.
+		if (m_pAuxController->GetPOV() == 180) {
+			m_pLift->ManualAdjust(-0.950);
+		}
+
+		if (m_pAuxController->GetRawButton(eButtonA)) m_pLift->SetFrontHook(true);
+		if (m_pAuxController->GetRawButton(eButtonB)) m_pLift->SetFrontHook(false);
+		if (m_pAuxController->GetRawButton(eButtonX)) m_pLift->SetBackHook(true);
+		if (m_pAuxController->GetRawButton(eButtonY)) m_pLift->SetBackHook(false);
 	}
 
 	/**************************************************************************
@@ -599,7 +585,7 @@ void CRobotMain::TestPeriodic()
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings
 	**************************************************************************/
-
+	/*
 	// Retrieve most recent vision packet
 	CVisionPacket* pVisionPacket = CVisionPacket::GetReceivedPacket();
 	// If it's not a nullptr, then continue, otherwise tick Drive
@@ -634,8 +620,8 @@ void CRobotMain::TestPeriodic()
 		else m_pDrive->Tick();
 	}
 	else m_pDrive->Tick();
-	
 	m_pPrevVisionPacket = pVisionPacket;
+	*/
 }
 
 #ifndef RUNNING_FRC_TESTS

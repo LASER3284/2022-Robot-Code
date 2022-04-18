@@ -12,14 +12,8 @@
 const double dMotorOpenLoopRampRate		= 0.650;
 
 // Solenoid Channels.
-const int nLeftMidClaw1                 =   0;
-const int nLeftMidClaw2                 =   1;
-const int nLeftHighClaw1                =   2;
-const int nLeftHighClaw2                =   3;
-const int nRightMidClaw1                =   4;
-const int nRightMidClaw2                =   5;
-const int nRightHighClaw1               =   6;
-const int nRightHighClaw2               =   7;
+const int nFrontClaw1                 =   0;
+const int nBackClaw1                  =   1;
 
 // CAN Device IDs.
 const int nLeadDriveMotor1              =   1;      // Left LD motor              (TALON FX/FALCON 500)

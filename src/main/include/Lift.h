@@ -8,7 +8,7 @@
 
 #include "IOMap.h"
 #include <ctre/phoenix/motorcontrol/can/WPI_TalonFX.h>
-#include <frc/DoubleSolenoid.h>
+#include <frc/Solenoid.h>
 
 using namespace ctre::phoenix::motorcontrol::can;
 using namespace ctre::phoenix::motorcontrol;
@@ -32,7 +32,7 @@ class CLift
 {
 public:
 	// Declare class methods.
-	CLift(bool bInverse);
+	CLift();
 	~CLift();
 	void Tick(ClimbStates kStage);
 	void Init();
@@ -43,16 +43,17 @@ public:
 	void ReleaseMid();
 	void ReleaseHigh();
 	void ManualAdjust(double dSpeed);
-	void SetMidHook(bool bValue);
-	void SetHighHook(bool bValue);
+	void SetFrontHook(bool bValue);
+	void SetBackHook(bool bValue);
 
 	bool m_bReady; // Bool on whether the Lift mechanism is ready for the next stage
 
 private:
 	// Declare class objects and variables.
-	WPI_TalonFX*		m_pLiftMotor1;
-	DoubleSolenoid*		m_pMidClaw;
-	DoubleSolenoid*		m_pHighClaw;
+	WPI_TalonFX*		    m_pLiftMotor1;
+	WPI_TalonFX*			m_pLiftMotor2;
+	Solenoid*		m_pFrontClaw;
+	Solenoid*		m_pBackClaw;
 
 	// Multiply motor counts per rev by inverse of gear ratio
 	// then divide by 360 degrees

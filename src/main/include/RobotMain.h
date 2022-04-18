@@ -55,8 +55,7 @@ private:
 	Timer*								m_pTimer;
 	CIntake*							m_pBackIntake;
 	CShooter*							m_pShooter;
-	CLift*								m_pLeftLift;
-	CLift*								m_pRightLift;
+	CLift*								m_pLift;
 	CVisionPacket*						m_pPrevVisionPacket;
 	CTransfer*							m_pTransfer;
 
