@@ -9,6 +9,9 @@
 #include "IOMap.h"
 #include <ctre/phoenix/motorcontrol/can/WPI_TalonFX.h>
 #include <frc/Solenoid.h>
+#include <frc/filter/MedianFilter.h>
+#include <frc/Timer.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 
 using namespace ctre::phoenix::motorcontrol::can;
 using namespace ctre::phoenix::motorcontrol;
@@ -52,8 +55,24 @@ private:
 	// Declare class objects and variables.
 	WPI_TalonFX*		    m_pLiftMotor1;
 	WPI_TalonFX*			m_pLiftMotor2;
-	Solenoid*		m_pFrontClaw;
-	Solenoid*		m_pBackClaw;
+	Solenoid*				m_pFrontClaw;
+	Solenoid*				m_pBackClaw;
+
+	// A median filter is used to easily filter out outliers.
+	// See WPILib docs: https://docs.wpilib.org/en/stable/docs/software/advanced-controls/filters/median-filter.html
+	MedianFilter<double>*   m_pMedianFilter1;
+	MedianFilter<double>*   m_pMedianFilter2;
+
+	// Elapsed time (in ms) that either of the lift motors have been stalled.
+	double m_dElapsedStallTime           = 0;
+	double m_dLastCalculateTime          = 0;
+
+	// Whether or not any of the motors for lift are stalled out.
+	bool   m_bMotorStalling				 = false;
+
+	// Minimum amount of milliseconds for the motor to be stalling in order to consider it "stalling"
+	const double m_dMinStallMilliseconds = 250;
+	const double m_dMinStallCurrent      = 20; // TODO: Fix this assumption; No idea if 20A is reasonable
 
 	// Multiply motor counts per rev by inverse of gear ratio
 	// then divide by 360 degrees

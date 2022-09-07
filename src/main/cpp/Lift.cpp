@@ -18,6 +18,9 @@ CLift::CLift()
 
 	m_pBackClaw = new Solenoid(0, PneumaticsModuleType::CTREPCM, nBackClaw1);
 	m_pFrontClaw = new Solenoid(0, PneumaticsModuleType::CTREPCM, nFrontClaw1);
+	
+	m_pMedianFilter1 = new MedianFilter<double>(60);
+	m_pMedianFilter2 = new MedianFilter<double>(60);
 }
 
 /******************************************************************************
@@ -28,8 +31,19 @@ CLift::CLift()
 CLift::~CLift()
 {
 	delete m_pLiftMotor1;
+	delete m_pMedianFilter1;
 
-	m_pLiftMotor1	= nullptr;
+	delete m_pLiftMotor2;
+	delete m_pMedianFilter2;
+
+	delete m_pBackClaw;
+	delete m_pFrontClaw;
+	
+	m_pLiftMotor1	 = nullptr;
+	m_pMedianFilter1 = nullptr;
+	m_pMedianFilter2 = nullptr;
+	m_pBackClaw      = nullptr;
+	m_pFrontClaw     = nullptr;
 }
 
 /******************************************************************************
@@ -45,19 +59,20 @@ void CLift::Init()
 
 	// Clear sticky faults
 	m_pLiftMotor1->ClearStickyFaults();
+	m_pLiftMotor2->ClearStickyFaults();
 
 	// Set the motors to brake mode.
 	m_pLiftMotor1->SetNeutralMode(NeutralMode::Brake);
-	m_pLiftMotor2->ConfigOpenloopRamp(dMotorOpenLoopRampRate);
+	m_pLiftMotor2->SetNeutralMode(NeutralMode::Brake);
 
 	// Configure rotary encoder for Lift Motor
 	m_pLiftMotor1->ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor);
-	m_pLiftMotor1->ConfigClosedloopRamp(0.650);
 	m_pLiftMotor2->ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor);
+
+	m_pLiftMotor1->ConfigClosedloopRamp(0.650);
 	m_pLiftMotor2->ConfigClosedloopRamp(0.650);
 
-
-	// Set inverted based on the constructor input
+	// Invert one of the falcons from the other one
 	m_pLiftMotor1->SetInverted(false);
 	m_pLiftMotor2->SetInverted(true);
 
@@ -94,6 +109,26 @@ void CLift::Tick(ClimbStates kStage)
 			Hang();
 			break;
 	}
+
+	// Add in some form of "stall detection" to check if the motors are stalling out.
+	const double dFilteredCurrent1 = m_pMedianFilter1->Calculate(m_pLiftMotor1->GetSupplyCurrent());
+	const double dFilteredCurrent2 = m_pMedianFilter2->Calculate(m_pLiftMotor2->GetSupplyCurrent());
+
+	// Check if the filtered currents are greater than the minimum stall current
+	const double currentSeconds = (double)Timer::GetFPGATimestamp();
+	const double elapsedTime = (currentSeconds - m_dLastCalculateTime) / 1000.0;
+
+	// If any of the motors are stalling, increment our elapsed stall time.
+	if(dFilteredCurrent1 > m_dMinStallCurrent || dFilteredCurrent2 > m_dMinStallCurrent) 
+		m_dElapsedStallTime += elapsedTime;
+	else 
+		m_dElapsedStallTime -= elapsedTime;
+
+	m_dLastCalculateTime = (double)Timer::GetFPGATimestamp();
+	m_bMotorStalling = (m_dElapsedStallTime >= m_dMinStallMilliseconds);
+	
+	// Update the dashboard
+	SmartDashboard::PutBoolean("bLiftStalling", m_bMotorStalling);
 }
 
 /******************************************************************************

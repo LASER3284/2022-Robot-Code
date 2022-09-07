@@ -85,6 +85,8 @@ void CTransfer::StartVertical()
 	Returns:		Nothing
 ******************************************************************************/
 void CTransfer::StartVerticalShot() {
+	// Note: originally 0.750 
+	// (:
 	m_pTopMotor->Set(-0.750);
 }
 

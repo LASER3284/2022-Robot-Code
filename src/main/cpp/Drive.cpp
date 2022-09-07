@@ -60,10 +60,10 @@ CDrive::~CDrive()
 ******************************************************************************/
 void CDrive::Init()
 {
-	m_pLeadDriveMotor1->SetOpenLoopRampRate(dMotorOpenLoopRampRate);
-	m_pLeadDriveMotor2->SetOpenLoopRampRate(dMotorOpenLoopRampRate);
-	m_pFollowMotor1->ConfigOpenloopRamp(dMotorOpenLoopRampRate);
-	m_pFollowMotor2->ConfigOpenloopRamp(dMotorOpenLoopRampRate);
+	m_pLeadDriveMotor1->SetOpenLoopRampRate(m_dOpenLoopRampRate);
+	m_pLeadDriveMotor2->SetOpenLoopRampRate(m_dOpenLoopRampRate);
+	m_pFollowMotor1->ConfigOpenloopRamp(m_dOpenLoopRampRate);
+	m_pFollowMotor2->ConfigOpenloopRamp(m_dOpenLoopRampRate);
 
 	// Reset sticky faults
 	m_pLeadDriveMotor1->ClearStickyFaults();

@@ -54,7 +54,7 @@ void CIntake::Init()
 	m_pIntakeDeployMotorController1->ConfigOpenloopRamp(0.500);
 
 	// Set open loop ramp rate for NEO 550
-	m_pIntakeMotor1->SetOpenLoopRampRate(0.100);
+	m_pIntakeMotor1->SetOpenLoopRampRate(0.000);
 	m_bIntakeOn = false;
 }
 
@@ -103,8 +103,8 @@ void CIntake::StopDeploy()
 ******************************************************************************/
 void CIntake::StartIntake(bool bSafe)
 {
-	if (IsGoalPressed() && !m_bGoal) {
-		m_pIntakeMotor1->Set(0.700);
+	if (!bSafe || (bSafe && IsGoalPressed() && !m_bGoal)) {
+		m_pIntakeMotor1->Set(0.950);
 		m_bIntakeOn = true;
 	}
 }

@@ -87,6 +87,8 @@ private:
 	CTrajectoryConstants*					m_pTrajectoryConstants;
 	RamseteCommand*							m_pRamseteCommand;
 	Trajectory								m_Trajectory;
+
+	const double							m_dOpenLoopRampRate = 0.650;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif

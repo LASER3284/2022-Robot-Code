@@ -52,7 +52,7 @@ private:
     bool m_bSafety;
     bool m_bIdle;
     double m_dPropotional = 2.51575;
-    double m_dIntegral = 1e-4795;
+    double m_dIntegral = 1e-47;
     double m_dDerivative = 0.00155;
     double m_dFeedForward = 0.0465;
 

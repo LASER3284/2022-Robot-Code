@@ -37,6 +37,7 @@ CRobotMain::CRobotMain()
 	m_kClimbState				= eNoClimb;
 	m_pPrevVisionPacket         = new CVisionPacket();
 	m_pTransfer					= new CTransfer();
+	m_pCompressor				= new Compressor(0, PneumaticsModuleType::CTREPCM);
 }
 
 /******************************************************************************
@@ -55,6 +56,7 @@ CRobotMain::~CRobotMain()
 	delete m_pBackIntake;
 	delete m_pPrevVisionPacket;
 	delete m_pTransfer;
+	delete m_pCompressor;
 
 	m_pDriveController	= nullptr;
 	m_pAuxController	= nullptr;
@@ -65,6 +67,7 @@ CRobotMain::~CRobotMain()
 	m_pBackIntake		= nullptr;
 	m_pPrevVisionPacket = nullptr;
 	m_pTransfer			= nullptr;
+	m_pCompressor		= nullptr;
 }
 
 /******************************************************************************
@@ -91,7 +94,7 @@ void CRobotMain::RobotInit()
 	SmartDashboard::PutData(m_pAutoChooser);
 
 	SmartDashboard::PutBoolean("bTeleopVision", false);
-	SmartDashboard::PutBoolean("bAutoClimb", true);
+	SmartDashboard::PutBoolean("bAutoClimb", false);
 	m_pTimer->Start();
 }
 
@@ -459,7 +462,7 @@ void CRobotMain::TeleopPeriodic()
 			m_pBackIntake->MoveIntake(false);
 			m_pBackIntake->m_bGoal = false;
 			// Start the intakes on the way down...
-			m_pBackIntake->StartIntake();
+			m_pBackIntake->StartIntake(false);
 		}
 	}
 	else if(m_pDriveController->GetRawButtonReleased(eButtonRB)) {
@@ -486,7 +489,7 @@ void CRobotMain::TeleopPeriodic()
 	else m_pTransfer->StartBack();
 
 	// Send balls into the flywheel with the trigger (even if we don't technically have a ball in the vertical)
-	if (m_pAuxController->GetRawAxis(eRightTrigger) >= 0.95) {
+	if (m_pAuxController->GetRawAxis(eRightTrigger) >= 0.95 || m_pDriveController->GetRawAxis(eRightTrigger) >= 0.95) {
 		m_pTransfer->StartVerticalShot();
 	}
 	// If a ball is in the vertical and RT isn't fully pressed, stop the vertical transfer
@@ -510,9 +513,8 @@ void CRobotMain::TeleopPeriodic()
 			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonY) && m_kClimbState == eHigh) m_kClimbState = eTraverse;
 			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonX) && m_kClimbState == eTraverse) m_kClimbState = eHang;
 		}
-
-		m_pLift->Tick(m_kClimbState);
 	} else {
+
 		// If the POV is up, spin the arms up
 		if (m_pAuxController->GetPOV() == 0) 
 		{
@@ -534,7 +536,8 @@ void CRobotMain::TeleopPeriodic()
 		if (m_pAuxController->GetRawButton(eButtonX)) m_pLift->SetBackHook(true);
 		if (m_pAuxController->GetRawButton(eButtonY)) m_pLift->SetBackHook(false);
 	}
-
+	m_pLift->Tick(m_kClimbState);
+	
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings
 	**************************************************************************/

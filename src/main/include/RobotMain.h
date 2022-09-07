@@ -18,6 +18,8 @@
 #include <frc/TimedRobot.h>
 #include <frc/Timer.h>
 #include <frc/smartdashboard/SendableChooser.h>
+#include <frc/Compressor.h>
+
 ///////////////////////////////////////////////////////////////////////////////
 using namespace frc;
 
@@ -58,7 +60,8 @@ private:
 	CLift*								m_pLift;
 	CVisionPacket*						m_pPrevVisionPacket;
 	CTransfer*							m_pTransfer;
-
+	Compressor*							m_pCompressor;
+	
 	double		m_dStartTime;							// A double representing start time
 	Paths		m_nAutoState;							// Current Auto state
 	ClimbStates m_kClimbState;							// Current Climbing state
