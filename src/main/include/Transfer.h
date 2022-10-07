@@ -31,10 +31,15 @@ public:
 	CTransfer();
 	~CTransfer();
 	void Init();
+	
 	void StartVertical();
 	void StartVerticalShot();
-	void StartBack();
+	void ReverseVertical();
 	void StopVertical();
+
+	void StartBack();
+	void ReverseBack();
+
 	void StopBack();
 	void UpdateLocations();
 

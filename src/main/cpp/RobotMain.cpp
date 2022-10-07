@@ -84,12 +84,15 @@ void CRobotMain::RobotInit()
 
 	// Setup autonomous chooser.
 	m_pAutoChooser->SetDefaultOption("Autonomous Idle", eAutoIdle);
-	m_pAutoChooser->AddOption("Advancement", eAdvancement1);
 	m_pAutoChooser->AddOption("Test Path", eTestPath);
 	m_pAutoChooser->AddOption("Dumb Taxi", eDumbTaxi);
 	m_pAutoChooser->AddOption("Taxi Shot", eTaxiShot);
 	m_pAutoChooser->AddOption("Taxi 2 Shot", eTaxi2Shot);
 	// m_pAutoChooser->AddOption("Less Dumb Taxi", eLessDumbTaxi1);
+
+	m_pAutoChooser->AddOption("Far Gremlin Ball", eFarGremlinBall1);
+	m_pAutoChooser->AddOption("Magic 4 Ball", eMagic4Ball1);
+
 	m_pAutoChooser->AddOption("YOLO Terminator", eTerminator);
 	SmartDashboard::PutData(m_pAutoChooser);
 
@@ -169,9 +172,6 @@ void CRobotMain::AutonomousPeriodic()
 		case eAutoIdle:
 			switch (m_nPreviousState)
 			{
-				case eAdvancement1:
-					m_nAutoState = eAdvancement2;
-					break;
 				case eTestPath:
 					m_nAutoState = eAutoStopped;
 					break;
@@ -314,6 +314,138 @@ void CRobotMain::AutonomousPeriodic()
 			}
 			break;
 	
+		case eFarGremlinBall1:
+			if( ((double)m_pTimer->Get() - m_dStartTime) < 0.750) {
+				// Drop the intake down and then start it.
+				m_pBackIntake->ToggleIntake();
+				m_pBackIntake->StartIntake();
+
+				// Start the flywheel now so that way the flywheel can get up to speed (hopefully) in time for us to shoot.
+				if(!m_pShooter->m_bShooterFullSpeed) {
+					m_pShooter->StartFlywheelShot();
+				}
+			}
+			
+			// Start/Stop the back transfer depending on if we've picked up the ball already.
+			if(!m_pTransfer->m_aBallLocations[1]) m_pTransfer->StartBack();
+			else m_pTransfer->StopBack();
+
+			m_pDrive->FollowTrajectory();
+			if (m_pDrive->IsTrajectoryFinished()) 
+			{
+				m_nPreviousState = eFarGremlinBall1;
+				m_nAutoState = eFarGremlinBall2;
+
+				m_pDrive->SetTrajectory(eFarGremlinBall2);
+				m_dStartTime = (double)m_pTimer->Get();
+			}
+
+			break;
+		case eFarGremlinBall2:
+			// Start/Stop the back transfer depending on if we've picked up the ball already.
+			if(!m_pTransfer->m_aBallLocations[1]) m_pTransfer->StartBack();
+			else m_pTransfer->StopBack();
+
+			// Shoot out the blue balls that we picked up (preload + behind)
+			// The flywheel has spun up to full speed, now we start the vertical transfer to feed the ball in.
+			if(m_pShooter->m_bShooterFullSpeed) {
+				m_pTransfer->StartVerticalShot();
+				if (!m_pTransfer->m_aBallLocations[0]) {
+					// Spin the vertical transfer to "full" speed just to make sure the back ball is ready.
+					m_pTransfer->StartVerticalShot();
+					// We need to feed the balls in the horizontal into the vertical and let them sit there.
+					m_pTransfer->StartBack();
+				}
+			}
+
+			m_pDrive->FollowTrajectory();
+			if (m_pDrive->IsTrajectoryFinished()) {
+				// This will spit out the ball back at our alliance station
+				m_pShooter->AdjustVelocity(-0.75);
+				m_pTransfer->StartVertical();
+				m_pShooter->AdjustVelocity(0.75);
+				
+				// We don't have any balls in the robot, time to stop the autonomous.
+				if(!m_pTransfer->m_aBallLocations[0] && !m_pTransfer->m_aBallLocations[1]) {
+					m_nPreviousState = eFarGremlinBall2;
+					m_nAutoState = eAutoStopped;
+				}
+			}
+
+			break;
+		
+		// Magic 3 Ball - Step #1: Drive back + pick up prestation ball
+		case eMagic4Ball1:
+			if( ((double)m_pTimer->Get() - m_dStartTime) < 0.750) {
+				// Drop the intake down and then start it.
+				m_pBackIntake->ToggleIntake();
+				m_pBackIntake->StartIntake();
+
+				// Start the flywheel now so that way the flywheel can get up to speed (hopefully) in time for us to shoot.
+				if(!m_pShooter->m_bShooterFullSpeed) {
+					m_pShooter->StartFlywheelShot();
+				}
+			}
+
+			// Start/Stop the back transfer depending on if we've picked up the ball already.
+			if(!m_pTransfer->m_aBallLocations[1]) m_pTransfer->StartBack();
+			else m_pTransfer->StopBack();
+
+			m_pDrive->FollowTrajectory();
+
+			if (m_pDrive->IsTrajectoryFinished()) {
+				// Shoot out the blue balls that we picked up (preload + behind)
+				// The flywheel has spun up to full speed, now we start the vertical transfer to feed the ball in.
+				if(m_pShooter->m_bShooterFullSpeed) {
+					m_pTransfer->StartVerticalShot();
+					if (!m_pTransfer->m_aBallLocations[0]) {
+						// Spin the vertical transfer to "full" speed just to make sure the back ball is ready.
+						m_pTransfer->StartVerticalShot();
+						// We need to feed the balls in the horizontal into the vertical and let them sit there.
+						m_pTransfer->StartBack();
+					}
+				}
+
+				// We don't have any balls in the robot, time to move onto the next set of balls
+				if(!m_pTransfer->m_aBallLocations[0] && !m_pTransfer->m_aBallLocations[1]) {
+					m_nPreviousState = eMagic4Ball1;
+					m_nAutoState = eMagic4Ball2;
+				}
+			}
+
+			break;
+
+		// Magic 4 Ball - Step #2: Pick up 2 balls from human player station (preload + HP)
+		case eMagic4Ball2:
+			// The intake should already be down because of Step #1 so we can skip that.
+			
+			// Start/Stop the back transfer depending on if we've picked up the ball already.
+			if(!m_pTransfer->m_aBallLocations[1]) m_pTransfer->StartBack();
+			else m_pTransfer->StopBack();
+
+			m_pDrive->FollowTrajectory();
+			if (m_pDrive->IsTrajectoryFinished()) {
+				// Shoot out the blue balls that we picked up (preload + behind)
+				// The flywheel has spun up to full speed, now we start the vertical transfer to feed the ball in.
+				if(m_pShooter->m_bShooterFullSpeed) {
+					m_pTransfer->StartVerticalShot();
+					if (!m_pTransfer->m_aBallLocations[0]) {
+						// Spin the vertical transfer to "full" speed just to make sure the back ball is ready.
+						m_pTransfer->StartVerticalShot();
+						// We need to feed the balls in the horizontal into the vertical and let them sit there.
+						m_pTransfer->StartBack();
+					}
+				}
+
+				// We don't have any balls in the robot, time to move onto the next set of balls
+				if(!m_pTransfer->m_aBallLocations[0] && !m_pTransfer->m_aBallLocations[1]) {
+					m_nPreviousState = eMagic4Ball2;
+					m_nAutoState = eAutoStopped;
+				}
+			}
+
+			break;
+
 		case eTerminator:
 			// Deploy the intake (similar logic to Teleop)
 			if (m_pBackIntake->IsGoalPressed())
@@ -401,7 +533,7 @@ void CRobotMain::AutonomousPeriodic()
 				}
 			}
 			*/
-			break;
+			break;		
 	}
 }
 
@@ -455,7 +587,7 @@ void CRobotMain::TeleopPeriodic()
 	for(int i = 0; i < 2; i++) {
 		if(m_pTransfer->m_aBallLocations[i]) iBallCount += 1;
 	}
-
+	
 	if(m_pDriveController->GetRawButtonPressed(eButtonRB)) {
 		// If the intake isn't down, move the intake down
 		if(!m_pBackIntake->GetLimitSwitchState(false)) {
@@ -489,8 +621,23 @@ void CRobotMain::TeleopPeriodic()
 	else m_pTransfer->StartBack();
 
 	// Send balls into the flywheel with the trigger (even if we don't technically have a ball in the vertical)
-	if (m_pAuxController->GetRawAxis(eRightTrigger) >= 0.95 || m_pDriveController->GetRawAxis(eRightTrigger) >= 0.95) {
+	if (m_pAuxController->GetRawAxis(eRightTrigger) >= 0.95) {
 		m_pTransfer->StartVerticalShot();
+	}
+	// Drop the shooter velocity (it'll be a bit off but that's ok), and then start the vertical transfer at a slow speed
+	// Then reset the shooter velocity back up
+	else if (m_pAuxController->GetRawAxis(eLeftTrigger) >= 0.95) {
+		m_pShooter->AdjustVelocity(-0.75);
+		m_pTransfer->StartVertical();
+		m_pShooter->AdjustVelocity(0.75);
+	}
+	else if (m_pAuxController->GetRawButtonPressed(eButtonLB)) {
+		// TODO: Check and see if this works with the ramp
+		// If not, just remove it and then do the baby shot instead ^^^
+		m_pTransfer->ReverseVertical();
+		
+		m_pTransfer->ReverseBack();
+		// TODO: Check and see how the intake works if we can reverse it or not to spit out balls at a higher RPM
 	}
 	// If a ball is in the vertical and RT isn't fully pressed, stop the vertical transfer
 	else if(m_pTransfer->m_aBallLocations[0]) {
@@ -513,7 +660,8 @@ void CRobotMain::TeleopPeriodic()
 			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonY) && m_kClimbState == eHigh) m_kClimbState = eTraverse;
 			if (m_pAuxController->GetRawButton(eButtonRB) && m_pAuxController->GetRawButton(eButtonX) && m_kClimbState == eTraverse) m_kClimbState = eHang;
 		}
-	} else {
+	} 
+	else {
 
 		// If the POV is up, spin the arms up
 		if (m_pAuxController->GetPOV() == 0) 
@@ -533,16 +681,17 @@ void CRobotMain::TeleopPeriodic()
 
 		if (m_pAuxController->GetRawButton(eButtonA)) m_pLift->SetFrontHook(true);
 		if (m_pAuxController->GetRawButton(eButtonB)) m_pLift->SetFrontHook(false);
+
 		if (m_pAuxController->GetRawButton(eButtonX)) m_pLift->SetBackHook(true);
 		if (m_pAuxController->GetRawButton(eButtonY)) m_pLift->SetBackHook(false);
 	}
+	
 	m_pLift->Tick(m_kClimbState);
 	
 	/**************************************************************************
 	    Description:	Vision processing and ball trackings
 	**************************************************************************/
-	
-	// TODO: add vision functionality from TestPeriodic
+
 }
 
 /******************************************************************************

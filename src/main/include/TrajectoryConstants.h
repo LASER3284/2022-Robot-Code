@@ -11,6 +11,7 @@
 #include <frc/trajectory/TrajectoryConfig.h>
 #include <frc/trajectory/Trajectory.h>
 #include <frc/trajectory/TrajectoryUtil.h>
+#include <map>
 
 using namespace frc;
 using namespace units;
@@ -29,11 +30,14 @@ enum Paths : int {
 	eLessDumbTaxi1,
 	eLessDumbTaxi2,
 	eLessDumbTaxi3,
-	
-	eAdvancement1,
-	eAdvancement2,
 
 	eTerminator,
+
+	eFarGremlinBall1,
+	eFarGremlinBall2,
+
+	eMagic4Ball1,
+	eMagic4Ball2,
 };
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +66,14 @@ public:
 
 private:
 	Trajectory* m_pSelectedPath;
+
+	map<Paths, string> m_mpPathFileName = {
+		{ eTestPath, "TestPath" },
+		{ eFarGremlinBall1, "FarGremlinBall_Pt1" },
+		{ eFarGremlinBall2, "FarGremlinBall_Pt2" },
+		{ eMagic4Ball1, "Magic4Ball_Pt1"},
+		{ eMagic4Ball2, "Magic4Ball_Pt2"}
+	};
 };
 
 #endif

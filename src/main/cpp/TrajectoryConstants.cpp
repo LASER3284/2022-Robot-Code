@@ -6,6 +6,9 @@
 
 #include "TrajectoryConstants.h"
 
+#include <pathplanner/lib/PathPlanner.h>
+using namespace pathplanner;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -16,31 +19,10 @@
 void CTrajectoryConstants::SelectTrajectory(int nSelection)
 {
 	Trajectory path;
-	switch(nSelection)
-	{
-		case eTestPath:
-			// Read and store the trajectory from a pre-generated JSON file
-			path = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/TestPath.wpilib.json");
-			break;
+	string pathPath = m_mpPathFileName.at((Paths)nSelection);
+	path = TrajectoryUtil::FromPathweaverJson(pathPath);
 
-		case eAdvancement1:
-			// Read and store the trajectory from a pre-generated JSON file
-			path = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/Advancement1.wpilib.json");
-			break;
-			
-		case eAdvancement2:
-			// Read and store the trajectory from a pre-generated JSON file
-			path = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/Advancement2.wpilib.json");
-			break;
-		
-		default:
-			// Read and store the trajectory from a pre-generated JSON file
-			path = TrajectoryUtil::FromPathweaverJson("/home/lvuser/deploy/paths/output/TestPath.wpilib.json");
-			break;
-	}
-	
-	m_pSelectedPath = (Trajectory*)malloc(sizeof(path) + 1);
-	memcpy(m_pSelectedPath, &path, sizeof(path) + 1);
+	m_pSelectedPath = new Trajectory(path);
 }
 
 /******************************************************************************
@@ -51,7 +33,5 @@ void CTrajectoryConstants::SelectTrajectory(int nSelection)
 void CTrajectoryConstants::SelectTrajectory(Trajectory Path)
 {
 	free(m_pSelectedPath);
-	
-	m_pSelectedPath = (Trajectory*)malloc(sizeof(Path));
-	memcpy(m_pSelectedPath, &Path, sizeof(Path));
+	m_pSelectedPath = new Trajectory(Path);
 }

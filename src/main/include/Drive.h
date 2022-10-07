@@ -34,15 +34,16 @@ using namespace units;
 
 // Declare constants
 const double	dJoystickDeadzone						= 0.100;
-const double	dDefaultBeta							= 1.100;	// 1.800
-const double	dDefaultZeta							= 0.500;	// 0.9
 const double	dDefaultProportional					= 0.265;	// Left drive proportional value. // 0.000179
 const double	dDefaultIntegral						= 0.000;	// Left drive integral value.
 const double	dDefaultDerivative						= 0.000;	// Left drive derivative value.
-const auto		kDefaultS								= 0.39_V;								        //	|	Drive characterization constants.
-const auto		kDefaultV								= 0.0544 * 1_V * 1_s / 1_in;			        //	|	Drive characterization constants.
-const auto		kDefaultA								= 0.00583 * 1_V * 1_s * 1_s / 1_in;				//	|	Drive characterization constants.
-const DifferentialDriveKinematics	kDriveKinematics	= DifferentialDriveKinematics(inch_t(30.000));	//  |	Drive characterization constants.
+const auto		kDefaultS								= 0.59652_V;								        //	|	Drive characterization constants.
+const auto		kDefaultV								= 0.06051 * 1_V * 1_s / 1_m;			        //	|	Drive characterization constants.
+const auto		kDefaultA								= 0.01027 * 1_V * 1_s * 1_s / 1_m;				//	|	Drive characterization constants.
+const DifferentialDriveKinematics	kDriveKinematics	= DifferentialDriveKinematics(inch_t(26.000));	//  |	Drive characterization constants.
+
+static const double kOffBalanceThresholdDegrees = 170.0f;
+static const double kOnBalanceThresholdDegrees  = 175.0f;
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -89,6 +90,9 @@ private:
 	Trajectory								m_Trajectory;
 
 	const double							m_dOpenLoopRampRate = 0.650;
+
+	bool									m_bAutoBalanceXMode = false;
+    bool									m_bAutoBalanceYMode = false;
 };
 ///////////////////////////////////////////////////////////////////////////////
 #endif

@@ -24,6 +24,7 @@ CDrive::CDrive(Joystick* pDriveController)
 	m_pFollowMotor2			= new WPI_TalonFX(nFollowDriveMotor2);
 	m_pRobotDrive			= new DifferentialDrive(*m_pLeadDriveMotor1->GetMotorPointer(), *m_pLeadDriveMotor2->GetMotorPointer());
 	m_pGyro					= new AHRS(SerialPort::Port::kMXP);
+	m_pTrajectoryConstants  = new CTrajectoryConstants();
 	m_bJoystickControl = false;
 }
 
@@ -81,6 +82,8 @@ void CDrive::Init()
 	ResetOdometry();
 	m_pOdometry	= new DifferentialDriveOdometry(m_pGyro->GetRotation2d());
 	
+	SmartDashboard::PutData(m_pGyro);
+
 	m_pTimer->Start();
 }
 
@@ -100,13 +103,52 @@ void CDrive::Tick()
 			dXAxis = m_pDriveController->GetRawAxis(eRightAxisX) / 2;
 			dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY) / 2;
 		}
+		
 		// Check if joystick is in deadzone.
 		if (fabs(dXAxis) < dJoystickDeadzone) dXAxis = 0.0;
 		if (fabs(dYAxis) < dJoystickDeadzone) dYAxis = 0.0;
 
+		/*
+		double dPitchAngleDegrees = m_pGyro->GetPitch();
+		double dRollAngleDegrees = m_pGyro->GetRoll();
+		if(!m_bAutoBalanceXMode && (fabs(dPitchAngleDegrees) >= fabs(kOffBalanceThresholdDegrees))) {
+			m_bAutoBalanceXMode = true;
+		}
+		else if(m_bAutoBalanceXMode && (fabs(dPitchAngleDegrees) <= fabs(kOffBalanceThresholdDegrees))) {
+			m_bAutoBalanceXMode = false;
+		}
+        
+		if (!m_bAutoBalanceYMode &&
+             (fabs(dPitchAngleDegrees) >=
+              fabs(kOffBalanceThresholdDegrees))) {
+            m_bAutoBalanceYMode = true;
+        }
+        else if (m_bAutoBalanceYMode &&
+                  (fabs(dPitchAngleDegrees) <=
+                   fabs(kOnBalanceThresholdDegrees))) {
+            m_bAutoBalanceYMode = false;
+        }
+		
+        if (m_bAutoBalanceXMode ) {
+            double pitchAngleRadians = dPitchAngleDegrees * (M_PI / 180.0);
+            //dXAxis = sin(pitchAngleRadians) * -1;
+        }
+        if (m_bAutoBalanceYMode ) {
+            double rollAngleRadians = dRollAngleDegrees * (M_PI / 180.0);
+            //dYAxis = sin(rollAngleRadians) * -1;
+        }
+		*/
+
 		// Set drivetrain powers to joystick controls.
 		m_pRobotDrive->ArcadeDrive(-dYAxis, dXAxis, false);
 	}
+
+
+	// Update the odometry
+    m_pOdometry->Update
+		(Rotation2d(degree_t(-m_pGyro->GetYaw())), 
+		inch_t(m_pLeadDriveMotor1->GetActual(true)), inch_t(m_pLeadDriveMotor2->GetActual(true))
+	);
 
 	// Update Smartdashboard values.
     SmartDashboard::PutNumber("LeftMotorPower", m_pLeadDriveMotor2->GetMotorVoltage());
@@ -118,7 +160,7 @@ void CDrive::Tick()
 }
 
 /******************************************************************************
-    Description:	Tick function, ran every 20ms in CRobotMain::Tick()
+    Description:	Method that forcibly disables the drive
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
@@ -127,14 +169,6 @@ void CDrive::ForceStop()
 	m_pLeadDriveMotor1->Stop();
 	m_pLeadDriveMotor2->Stop();
 	m_bJoystickControl = false;
-
-	// Update Smartdashboard values.
-    SmartDashboard::PutNumber("LeftMotorPower", m_pLeadDriveMotor2->GetMotorVoltage());
-    SmartDashboard::PutNumber("RightMotorPower", m_pLeadDriveMotor1->GetMotorVoltage());
-    SmartDashboard::PutNumber("Left Actual Velocity", (m_pLeadDriveMotor2->GetActual(false) / 39.3701));
-    SmartDashboard::PutNumber("Right Actual Velocity", (m_pLeadDriveMotor1->GetActual(false) / 39.3701));
-    SmartDashboard::PutNumber("Left Actual Position", m_pLeadDriveMotor2->GetActual(true));
-    SmartDashboard::PutNumber("Right Actual Position", m_pLeadDriveMotor1->GetActual(true));
 }
 
 /******************************************************************************
@@ -144,10 +178,15 @@ void CDrive::ForceStop()
 ******************************************************************************/
 void CDrive::ResetOdometry()
 {
+	// Reset the encoders
 	m_pLeadDriveMotor1->ResetEncoderPosition();
 	m_pLeadDriveMotor2->ResetEncoderPosition();
 
+	// Reset the gyro
 	m_pGyro->ZeroYaw();
+
+	// Reset the field position
+	m_pOdometry->ResetPosition(m_pTrajectoryConstants->GetSelectedTrajectory().InitialPose(), Rotation2d(degree_t(-m_pGyro->GetYaw())));
 }
 
 /******************************************************************************
@@ -189,15 +228,16 @@ void CDrive::FollowTrajectory()
 void CDrive::SetTrajectory(Paths nPath)
 {
 	// Taxi pathes doesn't need to set a trajectory, as it's all time based...
-	if(nPath == eDumbTaxi || nPath == eTaxiShot || nPath == eTaxi2Shot) return;
+	if(nPath == eDumbTaxi || nPath == eTaxiShot || nPath == eTaxi2Shot) 
+		return;
 
 	m_pTrajectoryConstants->SelectTrajectory(nPath);
 	m_Trajectory = m_pTrajectoryConstants->GetSelectedTrajectory();
-
+	
 	m_pRamseteCommand = new frc2::RamseteCommand(
         m_Trajectory, 
         [this]() { return m_pOdometry->GetPose(); }, 
-        RamseteController(), 
+        RamseteController(1.1, 0.5), 
         SimpleMotorFeedforward<units::meters>(kDefaultS, kDefaultV, kDefaultA), 
         kDriveKinematics, 
         [this]() { return GetWheelSpeeds(); }, 
@@ -205,6 +245,9 @@ void CDrive::SetTrajectory(Paths nPath)
         frc2::PIDController(dDefaultProportional, dDefaultIntegral, dDefaultDerivative), 
         [this](auto left, auto right) { SetDrivePowers(left, right); }
     );
+
+	// Go RamseteCommand!
+	m_pRamseteCommand->Schedule();
 }
 
 /******************************************************************************

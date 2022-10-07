@@ -91,13 +91,12 @@ void CTransfer::StartVerticalShot() {
 }
 
 /******************************************************************************
-	Description:	Start back transfer motor
+	Description:	Start the vertical transfer motor reversed
 	Arguments:		None
 	Returns:		Nothing
 ******************************************************************************/
-void CTransfer::StartBack()
-{
-	m_pBackMotor->Set(0.500);
+void CTransfer::ReverseVertical() {
+	m_pTopMotor->Set(0.225);
 }
 
 /******************************************************************************
@@ -108,6 +107,28 @@ void CTransfer::StartBack()
 void CTransfer::StopVertical()
 {
 	m_pTopMotor->Set(0.000);
+}
+
+
+/******************************************************************************
+	Description:	Start back transfer motor
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CTransfer::StartBack()
+{
+	m_pBackMotor->Set(0.500);
+}
+
+
+/******************************************************************************
+	Description:	Start the back transfer motor reversed for spitting out balls
+	Arguments:		None
+	Returns:		Nothing
+******************************************************************************/
+void CTransfer::ReverseBack()
+{
+	m_pBackMotor->Set(-0.500);
 }
 
 /******************************************************************************
