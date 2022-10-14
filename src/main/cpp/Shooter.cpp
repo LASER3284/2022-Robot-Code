@@ -146,3 +146,22 @@ void CShooter::AdjustVelocity(double dVelocityPercent) {
 	if(m_bIdle) m_pFlywheelMotor1->Set(ControlMode::Velocity, m_dExpectedIdleVelocity);
 	else m_pFlywheelMotor1->Set(ControlMode::Velocity, m_dExpectedShotVelocity);
 }
+
+/******************************************************************************
+	Description:	Resets the base shoot / idle velocity
+	Arguments:		Nothing
+	Returns:		Nothing
+******************************************************************************/
+void CShooter::ResetVelocity() {
+	m_dFlywheelMotorSpeed = m_dDefaultFlywheelSpeed;
+	m_dIdleMotorSpeed = m_dDefaultIdleSpeed;
+
+    m_dExpectedShotVelocity = m_dPeakSensorVelocity * m_dFlywheelMotorSpeed;
+    m_dExpectedIdleVelocity = m_dPeakSensorVelocity * m_dIdleMotorSpeed;
+
+	SmartDashboard::PutNumber("dExpectedShotVelocity", m_dExpectedShotVelocity);
+	SmartDashboard::PutNumber("dExpectedIdleVelocity", m_dExpectedIdleVelocity);
+
+	if(m_bIdle) m_pFlywheelMotor1->Set(ControlMode::Velocity, m_dExpectedIdleVelocity);
+	else m_pFlywheelMotor1->Set(ControlMode::Velocity, m_dExpectedShotVelocity);
+}

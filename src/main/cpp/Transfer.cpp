@@ -66,6 +66,8 @@ void CTransfer::Init()
 	m_pTopMotor->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 	m_pBackMotor->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 	m_pBackMotor->SetOpenLoopRampRate(0.000);
+	m_pTopMotor->SetSmartCurrentLimit(25);
+	m_pBackMotor->SetSmartCurrentLimit(25);
 	UpdateLocations();
 }
 

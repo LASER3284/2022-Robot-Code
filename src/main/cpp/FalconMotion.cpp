@@ -581,7 +581,7 @@ void CFalconMotion::SetMotorNeutralMode(int nMode)
 }
 
 /******************************************************************************
-	Description:	GetCurrentPositionInUnits - Returns the current position in units.
+	Description:	GetCurrentPositionInUnits - Returns the current position/velocity in inches (per second).
 	Arguments:	 	None
 	Returns: 		double - Position of the motor.
 ******************************************************************************/

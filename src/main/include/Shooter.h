@@ -31,12 +31,14 @@ public:
     // Declare class methods.
     CShooter();
     ~CShooter();
+    
     void Init();
     void Tick();
     void StartFlywheelShot();
     void IdleStop();
 	void Stop();
     void SetSafety(bool bSafety);
+    void ResetVelocity();
     void AdjustVelocity(double dVelocityPercent);
 
     bool m_bShooterOn;
@@ -62,6 +64,10 @@ private:
     const double m_dPeakSensorVelocity = (6380 / 600) * (2048 / 1); 
     double m_dExpectedShotVelocity = m_dPeakSensorVelocity * m_dFlywheelMotorSpeed;
     double m_dExpectedIdleVelocity = m_dPeakSensorVelocity * m_dIdleMotorSpeed;
+
+    const double m_dDefaultFlywheelSpeed = m_dFlywheelMotorSpeed;
+    const double m_dDefaultIdleSpeed = m_dIdleMotorSpeed;
+
 };
 ///////////////////////////////////////////////////////////////////////////////
 

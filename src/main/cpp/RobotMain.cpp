@@ -91,6 +91,7 @@ void CRobotMain::RobotInit()
 	// m_pAutoChooser->AddOption("Less Dumb Taxi", eLessDumbTaxi1);
 
 	m_pAutoChooser->AddOption("Far Gremlin Ball", eFarGremlinBall1);
+	m_pAutoChooser->AddOption("Hangar Gremlin Ball", eHangarGremlinBall1);
 	m_pAutoChooser->AddOption("Magic 4 Ball", eMagic4Ball1);
 
 	m_pAutoChooser->AddOption("YOLO Terminator", eTerminator);
@@ -114,11 +115,17 @@ void CRobotMain::RobotPeriodic()
 	// Tick the transfer system
 	m_pTransfer->UpdateLocations();
 
+	// Update the odometry & Field2D on dashboard
+	m_pDrive->Tick();
+
 	// Update SmartDashboard for easy checking.
 	SmartDashboard::PutBoolean("Vertical Transfer Infrared", m_pTransfer->m_aBallLocations[0]);
 	SmartDashboard::PutBoolean("Back Transfer Infrared", m_pTransfer->m_aBallLocations[1]);
 	SmartDashboard::PutBoolean("Back-Down Limit Switch", m_pBackIntake->GetLimitSwitchState(false));
 	SmartDashboard::PutBoolean("Back-Up Limit Switch", m_pBackIntake->GetLimitSwitchState(true));
+
+	SmartDashboard::PutNumber("m_nAutoState", (double)m_nAutoState);
+	SmartDashboard::PutNumber("m_nPreviousState", (double)m_nPreviousState);
 }
 
 /******************************************************************************
@@ -128,8 +135,7 @@ void CRobotMain::RobotPeriodic()
 ******************************************************************************/
 void CRobotMain::AutonomousInit()
 {
-	// Init Drive and disable joystick
-	m_pDrive->Init();
+	// Make sure we disable the joystick
 	m_pDrive->SetDriveSafety(false);
 	m_pDrive->SetJoystickControl(false);
 
@@ -144,11 +150,13 @@ void CRobotMain::AutonomousInit()
 
 	// Get selected option and switch m_nAutoState based on that
 	m_nAutoState = m_pAutoChooser->GetSelected();
-	m_pDrive->SetTrajectory(m_nAutoState);
 	
-	if(m_nAutoState == eTerminator) {
-		m_pBackIntake->ToggleIntake();
-	}
+	// We don't need to set the trajectory/odometry for these paths.
+	if(m_nAutoState == eDumbTaxi || m_nAutoState == eTaxiShot || m_nAutoState == eTaxi2Shot || m_nAutoState == eAutoIdle || m_nAutoState == eTerminator) 
+		return;
+	
+	m_pDrive->SetTrajectory(m_nAutoState);
+	m_pDrive->ResetOdometry();
 }
 
 /******************************************************************************
@@ -313,12 +321,13 @@ void CRobotMain::AutonomousPeriodic()
 				m_nAutoState = eAutoStopped;
 			}
 			break;
-	
+
+		// Both the far/hangar gremlin ball autos function the same way, so just let the case fall through
+		case eHangarGremlinBall1:
 		case eFarGremlinBall1:
 			if( ((double)m_pTimer->Get() - m_dStartTime) < 0.750) {
 				// Drop the intake down and then start it.
-				m_pBackIntake->ToggleIntake();
-				m_pBackIntake->StartIntake();
+				m_pBackIntake->MoveIntake(false);
 
 				// Start the flywheel now so that way the flywheel can get up to speed (hopefully) in time for us to shoot.
 				if(!m_pShooter->m_bShooterFullSpeed) {
@@ -326,44 +335,66 @@ void CRobotMain::AutonomousPeriodic()
 				}
 			}
 			
+			if(m_pBackIntake->GetLimitSwitchState(false)) {
+				m_pBackIntake->StartIntake();
+			}
+
 			// Start/Stop the back transfer depending on if we've picked up the ball already.
 			if(!m_pTransfer->m_aBallLocations[1]) m_pTransfer->StartBack();
 			else m_pTransfer->StopBack();
 
-			m_pDrive->FollowTrajectory();
 			if (m_pDrive->IsTrajectoryFinished()) 
 			{
-				m_nPreviousState = eFarGremlinBall1;
-				m_nAutoState = eFarGremlinBall2;
+				// If we've finished the trajectory, stop driving so we can shoot the ball.
+				m_pDrive->ForceStop();
 
-				m_pDrive->SetTrajectory(eFarGremlinBall2);
-				m_dStartTime = (double)m_pTimer->Get();
+				// Shoot out the allied balls that we picked up (preload + behind)
+				// The flywheel has spun up to full speed, now we start the vertical transfer to feed the ball in.
+				if(m_pShooter->m_bShooterFullSpeed) {
+					m_pTransfer->StartVerticalShot();
+					if (!m_pTransfer->m_aBallLocations[0]) {
+						// Spin the vertical transfer to "full" speed just to make sure the back ball is ready.
+						m_pTransfer->StartVerticalShot();
+						// We need to feed the balls in the horizontal into the vertical and let them sit there.
+						m_pTransfer->StartBack();
+					}
+				}
+
+				// Now that we've shot all of the allied balls out, change our auto state and go be a gremlin.
+				if(!m_pTransfer->m_aBallLocations[0] && !m_pTransfer->m_aBallLocations[1]) {
+					if(m_nAutoState == eFarGremlinBall1) {
+						m_nPreviousState = eFarGremlinBall1;
+						m_nAutoState = eFarGremlinBall2;
+					}
+					else if(m_nAutoState == eHangarGremlinBall1) {
+						m_nPreviousState = eHangarGremlinBall1;
+						m_nAutoState = eHangarGremlinBall2;
+					}
+					
+					// Update the trajectory and move on to the next auto state
+					m_pDrive->SetTrajectory(m_nAutoState);
+				}
+			}
+			else {
+				m_pDrive->FollowTrajectory();
 			}
 
 			break;
+		case eHangarGremlinBall2:
 		case eFarGremlinBall2:
-			// Start/Stop the back transfer depending on if we've picked up the ball already.
-			if(!m_pTransfer->m_aBallLocations[1]) m_pTransfer->StartBack();
-			else m_pTransfer->StopBack();
-
-			// Shoot out the blue balls that we picked up (preload + behind)
-			// The flywheel has spun up to full speed, now we start the vertical transfer to feed the ball in.
-			if(m_pShooter->m_bShooterFullSpeed) {
-				m_pTransfer->StartVerticalShot();
-				if (!m_pTransfer->m_aBallLocations[0]) {
-					// Spin the vertical transfer to "full" speed just to make sure the back ball is ready.
-					m_pTransfer->StartVerticalShot();
-					// We need to feed the balls in the horizontal into the vertical and let them sit there.
-					m_pTransfer->StartBack();
-				}
-			}
-
-			m_pDrive->FollowTrajectory();
+			// If we've finished following the trajectory, go ahead and shoot/spit out the opposite ball.
 			if (m_pDrive->IsTrajectoryFinished()) {
-				// This will spit out the ball back at our alliance station
-				m_pShooter->AdjustVelocity(-0.75);
-				m_pTransfer->StartVertical();
-				m_pShooter->AdjustVelocity(0.75);
+				// For the "far gremlin ball", we want to *shoot* the ball
+				if(m_nAutoState == eFarGremlinBall2) {
+					m_pTransfer->StartVerticalShot();
+				}
+				// But for the hangar gremlin ball, we want to *spit* the ball out avoid chucking it out of the field
+				else if(m_nAutoState == eHangarGremlinBall2) {
+					m_pShooter->AdjustVelocity(-0.75);
+					m_pTransfer->StartVertical();
+					m_pShooter->AdjustVelocity(0.75);
+				}
+				m_pDrive->ForceStop();
 				
 				// We don't have any balls in the robot, time to stop the autonomous.
 				if(!m_pTransfer->m_aBallLocations[0] && !m_pTransfer->m_aBallLocations[1]) {
@@ -371,9 +402,11 @@ void CRobotMain::AutonomousPeriodic()
 					m_nAutoState = eAutoStopped;
 				}
 			}
+			else {
+				m_pDrive->FollowTrajectory();
+			}
 
 			break;
-		
 		// Magic 3 Ball - Step #1: Drive back + pick up prestation ball
 		case eMagic4Ball1:
 			if( ((double)m_pTimer->Get() - m_dStartTime) < 0.750) {
@@ -394,6 +427,9 @@ void CRobotMain::AutonomousPeriodic()
 			m_pDrive->FollowTrajectory();
 
 			if (m_pDrive->IsTrajectoryFinished()) {
+				// If we've finished the trajectory, stop driving so we can shoot the ball.
+				m_pDrive->ForceStop();
+
 				// Shoot out the blue balls that we picked up (preload + behind)
 				// The flywheel has spun up to full speed, now we start the vertical transfer to feed the ball in.
 				if(m_pShooter->m_bShooterFullSpeed) {
@@ -544,7 +580,6 @@ void CRobotMain::AutonomousPeriodic()
 ******************************************************************************/
 void CRobotMain::TeleopInit()
 {
-	m_pDrive->Init();
 	m_pDrive->SetJoystickControl(true);
 	m_pDrive->SetDriveSafety(false);
 	m_pBackIntake->Init();
@@ -552,6 +587,7 @@ void CRobotMain::TeleopInit()
 	m_pLift->Init();
 	m_pShooter->SetSafety(false);
 	m_pShooter->Init();
+	m_pShooter->ResetVelocity();
 	m_pShooter->StartFlywheelShot();
 	m_pTransfer->Init();
 }
@@ -576,7 +612,6 @@ void CRobotMain::TeleopPeriodic()
 	{
 		m_pDrive->SetJoystickControl(true);
 	}
-	m_pDrive->Tick();
 
 	/**************************************************************************
 	    Description:	Manual ticks

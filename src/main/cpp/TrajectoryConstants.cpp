@@ -6,8 +6,17 @@
 
 #include "TrajectoryConstants.h"
 
-#include <pathplanner/lib/PathPlanner.h>
 using namespace pathplanner;
+
+CTrajectoryConstants::CTrajectoryConstants() {
+	for(auto it = m_mpPathFileName.begin(); it != m_mpPathFileName.end(); it++) {
+		Paths path = it->first;
+		TrajectoryContainer sTrajectory = it->second;
+
+		PathPlannerTrajectory pathplannerTrajectory = PathPlanner::loadPath(sTrajectory.m_sPathName, 3_mps, 3.0_mps_sq, sTrajectory.m_bReversed);
+		m_mpPathFileName[path].m_pSelectedTrajectory = new Trajectory(pathplannerTrajectory.asWPILibTrajectory());
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -18,20 +27,9 @@ using namespace pathplanner;
 ******************************************************************************/
 void CTrajectoryConstants::SelectTrajectory(int nSelection)
 {
-	Trajectory path;
-	string pathPath = m_mpPathFileName.at((Paths)nSelection);
-	path = TrajectoryUtil::FromPathweaverJson(pathPath);
-
-	m_pSelectedPath = new Trajectory(path);
-}
-
-/******************************************************************************
-    Description:	Set selected trajectory based on new trajectory
-	Arguments:		Trajectory Path
-	Derived from:	Nothing
-******************************************************************************/
-void CTrajectoryConstants::SelectTrajectory(Trajectory Path)
-{
-	free(m_pSelectedPath);
-	m_pSelectedPath = new Trajectory(Path);
+	Paths eSelection = (Paths)nSelection;
+	
+	if(m_mpPathFileName.count(eSelection)) {
+		m_pSelectedPath = m_mpPathFileName.at(eSelection);
+	}
 }

@@ -25,7 +25,15 @@ CDrive::CDrive(Joystick* pDriveController)
 	m_pRobotDrive			= new DifferentialDrive(*m_pLeadDriveMotor1->GetMotorPointer(), *m_pLeadDriveMotor2->GetMotorPointer());
 	m_pGyro					= new AHRS(SerialPort::Port::kMXP);
 	m_pTrajectoryConstants  = new CTrajectoryConstants();
-	m_bJoystickControl = false;
+	m_pField				= new Field2d();
+
+	m_pLeadDriveMotor1->SetPulsesPerRev((50 / 9) * 2048);
+	m_pLeadDriveMotor2->SetPulsesPerRev((50 / 9) * 2048);
+
+	m_pLeadDriveMotor1->SetRevsPerUnit((1.000 / (4.0 * 3.1415)));
+	m_pLeadDriveMotor2->SetRevsPerUnit((1.000 / (4.0 * 3.1415)));
+	
+	m_bJoystickControl 		= false;
 }
 
 /******************************************************************************
@@ -43,6 +51,7 @@ CDrive::~CDrive()
 	delete m_pRobotDrive;
 	delete m_pGyro;
 	delete m_pOdometry;
+	delete m_pField;
 
 	m_pDriveController	= nullptr;
 	m_pLeadDriveMotor1	= nullptr;
@@ -52,6 +61,7 @@ CDrive::~CDrive()
 	m_pRobotDrive		= nullptr;
 	m_pGyro				= nullptr;
 	m_pOdometry			= nullptr;
+	m_pField			= nullptr;
 }
 
 /******************************************************************************
@@ -79,11 +89,22 @@ void CDrive::Init()
 	m_pFollowMotor2->Follow(*m_pLeadDriveMotor2->GetMotorPointer());
 
 	// Reset encoders and odometry
-	ResetOdometry();
 	m_pOdometry	= new DifferentialDriveOdometry(m_pGyro->GetRotation2d());
-	
-	SmartDashboard::PutData(m_pGyro);
 
+	// Reset the encoders
+	m_pLeadDriveMotor1->ResetEncoderPosition();
+	m_pLeadDriveMotor2->ResetEncoderPosition();
+
+	// Reset the gyro
+	m_pGyro->ZeroYaw();
+
+	m_pOdometry->ResetPosition(
+		Pose2d(0_m, 0_m, Rotation2d(0_deg)), 
+		Rotation2d(degree_t(-m_pGyro->GetYaw()))
+	);
+
+	SmartDashboard::PutData("Gyro", m_pGyro);
+	SmartDashboard::PutData("Field", m_pField);
 	m_pTimer->Start();
 }
 
@@ -98,65 +119,37 @@ void CDrive::Tick()
 	{
 		double dXAxis = m_pDriveController->GetRawAxis(eRightAxisX);
 		double dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY);
-		if (m_pDriveController->GetRawAxis(eRightTrigger) >= 0.950) {
-			// If the right drive trigger is pressed all the way, then divide joystick inputs by 2.
-			dXAxis = m_pDriveController->GetRawAxis(eRightAxisX) / 2;
-			dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY) / 2;
-		}
-		
+
 		// Check if joystick is in deadzone.
 		if (fabs(dXAxis) < dJoystickDeadzone) dXAxis = 0.0;
 		if (fabs(dYAxis) < dJoystickDeadzone) dYAxis = 0.0;
 
-		/*
-		double dPitchAngleDegrees = m_pGyro->GetPitch();
-		double dRollAngleDegrees = m_pGyro->GetRoll();
-		if(!m_bAutoBalanceXMode && (fabs(dPitchAngleDegrees) >= fabs(kOffBalanceThresholdDegrees))) {
-			m_bAutoBalanceXMode = true;
+		if (m_pDriveController->GetRawAxis(eRightTrigger) >= 0.950) {
+			// If the right drive trigger is pressed all the way, then divide joystick inputs by half (and a quarter).
+			dXAxis = m_pDriveController->GetRawAxis(eRightAxisX) / 4;
+			dYAxis = m_pDriveController->GetRawAxis(eLeftAxisY) / 4;
 		}
-		else if(m_bAutoBalanceXMode && (fabs(dPitchAngleDegrees) <= fabs(kOffBalanceThresholdDegrees))) {
-			m_bAutoBalanceXMode = false;
-		}
-        
-		if (!m_bAutoBalanceYMode &&
-             (fabs(dPitchAngleDegrees) >=
-              fabs(kOffBalanceThresholdDegrees))) {
-            m_bAutoBalanceYMode = true;
-        }
-        else if (m_bAutoBalanceYMode &&
-                  (fabs(dPitchAngleDegrees) <=
-                   fabs(kOnBalanceThresholdDegrees))) {
-            m_bAutoBalanceYMode = false;
-        }
 		
-        if (m_bAutoBalanceXMode ) {
-            double pitchAngleRadians = dPitchAngleDegrees * (M_PI / 180.0);
-            //dXAxis = sin(pitchAngleRadians) * -1;
-        }
-        if (m_bAutoBalanceYMode ) {
-            double rollAngleRadians = dRollAngleDegrees * (M_PI / 180.0);
-            //dYAxis = sin(rollAngleRadians) * -1;
-        }
-		*/
 
 		// Set drivetrain powers to joystick controls.
 		m_pRobotDrive->ArcadeDrive(-dYAxis, dXAxis, false);
 	}
 
-
 	// Update the odometry
-    m_pOdometry->Update
-		(Rotation2d(degree_t(-m_pGyro->GetYaw())), 
-		inch_t(m_pLeadDriveMotor1->GetActual(true)), inch_t(m_pLeadDriveMotor2->GetActual(true))
+	// 6in difference between the gyro & the center drive motors
+    m_pOdometry->Update(
+		Rotation2d(degree_t(-m_pGyro->GetYaw())), 
+		meter_t(m_pLeadDriveMotor1->GetActual(true) / 39.3701), meter_t(m_pLeadDriveMotor2->GetActual(true) / 39.3701)
 	);
+	m_pField->SetRobotPose(m_pOdometry->GetPose());
 
 	// Update Smartdashboard values.
     SmartDashboard::PutNumber("LeftMotorPower", m_pLeadDriveMotor2->GetMotorVoltage());
     SmartDashboard::PutNumber("RightMotorPower", m_pLeadDriveMotor1->GetMotorVoltage());
     SmartDashboard::PutNumber("Left Actual Velocity", (m_pLeadDriveMotor2->GetActual(false) / 39.3701));
     SmartDashboard::PutNumber("Right Actual Velocity", (m_pLeadDriveMotor1->GetActual(false) / 39.3701));
-    SmartDashboard::PutNumber("Left Actual Position", m_pLeadDriveMotor2->GetActual(true));
-    SmartDashboard::PutNumber("Right Actual Position", m_pLeadDriveMotor1->GetActual(true));
+    SmartDashboard::PutNumber("Left Actual Position", m_pLeadDriveMotor2->GetActual(true) / 39.3701);
+    SmartDashboard::PutNumber("Right Actual Position", m_pLeadDriveMotor1->GetActual(true) / 39.3701);
 }
 
 /******************************************************************************
@@ -186,7 +179,10 @@ void CDrive::ResetOdometry()
 	m_pGyro->ZeroYaw();
 
 	// Reset the field position
-	m_pOdometry->ResetPosition(m_pTrajectoryConstants->GetSelectedTrajectory().InitialPose(), Rotation2d(degree_t(-m_pGyro->GetYaw())));
+	m_pOdometry->ResetPosition(
+		m_pTrajectoryConstants->GetSelectedTrajectory().InitialPose(), 
+		Rotation2d(degree_t(-m_pGyro->GetYaw()))
+	);
 }
 
 /******************************************************************************
@@ -228,21 +224,23 @@ void CDrive::FollowTrajectory()
 void CDrive::SetTrajectory(Paths nPath)
 {
 	// Taxi pathes doesn't need to set a trajectory, as it's all time based...
-	if(nPath == eDumbTaxi || nPath == eTaxiShot || nPath == eTaxi2Shot) 
+	if(nPath == eDumbTaxi || nPath == eTaxiShot || nPath == eTaxi2Shot || nPath == eAutoIdle || nPath == eTerminator) 
 		return;
 
 	m_pTrajectoryConstants->SelectTrajectory(nPath);
 	m_Trajectory = m_pTrajectoryConstants->GetSelectedTrajectory();
 	
+	m_pField->GetObject("traj")->SetTrajectory(m_Trajectory);
+
 	m_pRamseteCommand = new frc2::RamseteCommand(
-        m_Trajectory, 
-        [this]() { return m_pOdometry->GetPose(); }, 
-        RamseteController(1.1, 0.5), 
-        SimpleMotorFeedforward<units::meters>(kDefaultS, kDefaultV, kDefaultA), 
-        kDriveKinematics, 
-        [this]() { return GetWheelSpeeds(); }, 
-        frc2::PIDController(dDefaultProportional, dDefaultIntegral, dDefaultDerivative), 
-        frc2::PIDController(dDefaultProportional, dDefaultIntegral, dDefaultDerivative), 
+        m_Trajectory,
+        [this]() { return m_pOdometry->GetPose(); },
+        RamseteController(),
+        SimpleMotorFeedforward<units::meters>(kDefaultS, kDefaultV, kDefaultA),
+        kDriveKinematics,
+        [this]() { return GetWheelSpeeds(); },
+        frc2::PIDController(dDefaultProportional, dDefaultIntegral, dDefaultDerivative),
+        frc2::PIDController(dDefaultProportional, dDefaultIntegral, dDefaultDerivative),
         [this](auto left, auto right) { SetDrivePowers(left, right); }
     );
 
@@ -279,6 +277,7 @@ void CDrive::SetDriveSpeeds(double dLeftVoltage, double dRightVoltage)
 ******************************************************************************/
 DifferentialDriveWheelSpeeds CDrive::GetWheelSpeeds()
 {
+	// 39.3701 is inches to meters btw :)
 	return {meters_per_second_t(m_pLeadDriveMotor1->GetActual(false) / 39.3701), meters_per_second_t(m_pLeadDriveMotor2->GetActual(false) / 39.3701)};
 }
 

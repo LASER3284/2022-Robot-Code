@@ -23,6 +23,7 @@
 #include <frc/trajectory/TrajectoryConfig.h>
 #include <frc/trajectory/Trajectory.h>
 #include <frc/geometry/Pose2d.h>
+#include <frc/smartdashboard/Field2d.h>
 #include <AHRS.h>
 #include <frc/Timer.h>
 
@@ -34,7 +35,7 @@ using namespace units;
 
 // Declare constants
 const double	dJoystickDeadzone						= 0.100;
-const double	dDefaultProportional					= 0.265;	// Left drive proportional value. // 0.000179
+const double	dDefaultProportional					= 0.43485;	// Left drive proportional value. // 0.000179
 const double	dDefaultIntegral						= 0.000;	// Left drive integral value.
 const double	dDefaultDerivative						= 0.000;	// Left drive derivative value.
 const auto		kDefaultS								= 0.59652_V;								        //	|	Drive characterization constants.
@@ -88,7 +89,7 @@ private:
 	CTrajectoryConstants*					m_pTrajectoryConstants;
 	RamseteCommand*							m_pRamseteCommand;
 	Trajectory								m_Trajectory;
-
+	Field2d*								m_pField;
 	const double							m_dOpenLoopRampRate = 0.650;
 
 	bool									m_bAutoBalanceXMode = false;
